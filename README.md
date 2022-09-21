@@ -4,7 +4,7 @@ _Multisig requires smart contracts to counts the number of signatures while Desi
 
 # Why Multisig is bad on Solana?
 
-**Painful for Stateless Infrastructures.** The smart contract basically will be granted permission like hold/transfer assets, configs authority, .etc. Thus, in order to execute the transaction with smart contract, the transaction including data, accounts must be stored on-chain. The process is super heavy and unable to scale. Further, if the transaction requires 2 signatures, it seems impossible.
+**Painful for Stateless Infrastructures.** The smart contract basically will be granted permission like assets vault/transfer, configs authority, .etc. Thus, in order to execute a transaction with smart contract, the transaction including data, accounts must be stored on-chain. The process is super heavy and unable to scale. Further, if the transaction requires 2 signatures, it seems impossible.
 
 **Lack of Composability.** Most of protocols on Solana is designated to work well with casual wallets. The casual wallet means a wallet with private key. However, smart-contract-based wallets don't have private key and must sign/verify by seeds via a "process of simulation". To make smart-contract-based wallets in multisigs adapt new protocols, the process is really time-taken.
 
