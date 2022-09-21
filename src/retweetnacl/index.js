@@ -2573,6 +2573,8 @@
     Z: Z,
     pow2523: pow2523,
     add: add,
+    pack: pack,
+    unpackneg: unpackneg,
     set25519: set25519,
     modL: modL,
     scalarmult: scalarmult,
@@ -2796,7 +2798,6 @@
   nacl.setPRNG = function (fn) {
     randombytes = fn
   }
-
   ;(function () {
     // Initialize PRNG if environment provides CSPRNG.
     // If not, methods calling randombytes will throw.
