@@ -22,7 +22,7 @@ Desig is just a casual wallet with private key. However, the key isn't hold by a
 
 The master privKey is cryptographically splitted in `n` child privKeys. Each child privKey will be secretly distributed to a corresponding holder.
 
-To sign a transaction, each holder will indepently sign it and share his signature. After have all signatures, a process will combine these signatures to reconstruct a valid signature of the master privKey.
+To sign a transaction, each holder will independently sign and share his/her signature. After have all signatures, a process will combine these signatures to reconstruct a valid signature of the master privKey.
 
 Send & Confirm the Transaction.
 
