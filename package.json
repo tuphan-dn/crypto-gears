@@ -17,7 +17,10 @@
     "clean": "rimraf dist"
   },
   "dependencies": {
+    "@noble/ed25519": "^1.7.1",
+    "@solana/web3.js": "^1.62.1",
     "bn.js": "^5.2.1",
+    "bs58": "^5.0.0",
     "tweetnacl": "^1.0.3"
   },
   "devDependencies": {

@@ -2,7 +2,7 @@ import BN from 'bn.js'
 import { hash, randomBytes } from './retweetnacl'
 
 const {
-  lowlevel: { gf, pack, add, scalarbase, modL },
+  lowlevel: { gf, pack, add, scalarbase, modL, L },
 } = require('./retweetnacl')
 
 export const derivedKeyLength = 32
@@ -39,7 +39,8 @@ export function genRandomness(num = 1) {
 }
 
 export function addScalars(a: Uint8Array, b: Uint8Array): Uint8Array {
-  const _a = new BN(a, 16, 'le')
-  const _b = new BN(b, 16, 'le')
-  return _a.add(_b).toArrayLike(Buffer, 'le', 32)
+  const red = BN.red(new BN(L, 16, 'le'))
+  const _a = new BN(a, 16, 'le').toRed(red)
+  const _b = new BN(b, 16, 'le').toRed(red)
+  return _a.redAdd(_b).toArrayLike(Buffer, 'le', 32)
 }
