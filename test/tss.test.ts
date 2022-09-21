@@ -11,7 +11,7 @@ describe('Threshold Signature Scheme', function () {
     console.groupEnd()
   })
 
-  it('1-of-1 sign/verify', async () => {
+  it('1-out-of-1 sign/verify', async () => {
     const {
       r: [ar],
       R,
@@ -22,7 +22,7 @@ describe('Threshold Signature Scheme', function () {
     if (!ok) throw new Error('Invalid signature')
   })
 
-  it('n-of-n sign/verify', async () => {
+  it('n-out-of-n sign/verify', async () => {
     const publicKey = addPublicKey(alice.publicKey, bob.publicKey)
     const {
       r: [ar, br],
