@@ -1,6 +1,6 @@
 # Decentralized Signature (Desig)
 
-Multisig requires smart contracts to counts the number of signatures while Desig splits a private key into multiple pieces and each party will use its piece to sign the transaction.
+_Multisig requires smart contracts to counts the number of signatures while Desig splits a private key into multiple pieces and each party will use its piece to sign the transaction._
 
 # Why Multisig is bad on Solana?
 
