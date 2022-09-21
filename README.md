@@ -28,7 +28,7 @@ Send & Confirm the transaction.
 
 # Desig's Assumption
 
-Desig is assuming the execution enviroment is Honest-but-Curious where holders act correctly following the Desig protocol. However, they will try to gain advantages learn the others' secrets.
+Desig is assuming the execution enviroment is Honest-but-Curious where holders act correctly following the Desig protocol. However, they will try to gain advantages to learn the others' secrets.
 
 With this assumption, Desig is secure.
 
