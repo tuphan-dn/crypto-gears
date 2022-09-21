@@ -24,7 +24,7 @@ The master privKey is cryptographically splitted in `n` child privKeys. Each chi
 
 To sign a transaction, each holder will independently sign and share his/her signature. After have all signatures, a process will combine these signatures to reconstruct a valid signature of the master privKey.
 
-Send & Confirm the Transaction.
+Send & Confirm the transaction.
 
 # Desig's Assumption
 
