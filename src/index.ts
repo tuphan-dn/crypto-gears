@@ -47,48 +47,5 @@ const case2 = () => {
   console.log('case-2:', verify(msg, sig, publicKey))
 }
 
-const case3 = async () => {
-  const publicKey = addPublicKey(alice.publicKey, bob.publicKey)
-  console.log('Master public key:', encode(publicKey))
-
-  // Build tx
-  const cluster = 'https://devnet.genesysgo.net'
-  const connection = new Connection(cluster, 'confirmed')
-  const tx = new Transaction()
-  const ix = SystemProgram.transfer({
-    fromPubkey: new PublicKey(publicKey),
-    toPubkey: new PublicKey('8W6QginLcAydYyMYjxuyKQN56NzeakDE3aRFrAmocS6D'),
-    lamports: 1000,
-  })
-  tx.add(ix)
-  tx.feePayer = new PublicKey(publicKey)
-  tx.recentBlockhash = (
-    await connection.getLatestBlockhash('confirmed')
-  ).blockhash
-  // Sign tx
-  const msg = tx.serializeMessage()
-  const {
-    r: [ar, br],
-    R,
-  } = genRandomness(2)
-  // Alice signs
-  const aDerivedKey = getDerivedKey(alice.secretKey)
-  const aSig = detached(msg, ar, aDerivedKey, R, publicKey)
-  // Bob signs
-  const bDerivedKey = getDerivedKey(bob.secretKey)
-  const bSig = detached(msg, br, bDerivedKey, R, publicKey)
-  // Add sig
-  const sig = addSig(aSig, bSig)
-  tx.addSignature(tx.feePayer, Buffer.from(sig))
-  // Send tx
-  const txId = await connection.sendRawTransaction(tx.serialize(), {
-    skipPreflight: true,
-    preflightCommitment: 'confirmed',
-  })
-  await connection.confirmTransaction(txId, 'confirmed')
-  console.log('case-3:', verify(msg, sig, publicKey), txId)
-}
-
 case1()
 case2()
-case3()
