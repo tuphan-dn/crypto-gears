@@ -32,6 +32,12 @@ Desig is assuming the execution enviroment is Honest-but-Curious where holders a
 
 With this assumption, Desig is secure.
 
+# How to test?
+
+```
+yarn test
+```
+
 # References
 
 [1] Bernstein, Daniel J., et al. ["High-speed high-security signatures."](http://ed25519.cr.yp.to/ed25519-20110926.pdf) International Workshop on Cryptographic Hardware and Embedded Systems. Springer, Berlin, Heidelberg, 2011.
