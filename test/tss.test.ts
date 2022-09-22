@@ -2,14 +2,8 @@ import { encode } from 'bs58'
 import BN from 'bn.js'
 import { expect } from 'chai'
 import { getDerivedKey, genRandomness } from '../src/tss.utils'
-import {
-  addPublicKey,
-  addSig,
-  detached,
-  verify,
-  generateSharedKey,
-} from '../src/tss'
-import { pi, yl } from '../src/sss'
+import { addPublicKey, addSig, detached, verify } from '../src/tss'
+import { share, pi, yl } from '../src/sss'
 import { msg, master, alice, bob, print } from './utils'
 
 describe('Threshold Signature Scheme', function () {
@@ -49,11 +43,7 @@ describe('Threshold Signature Scheme', function () {
 
   it('t-out-of-n sign/verify', async () => {
     const derivedKey = getDerivedKey(master.secretKey)
-    const [aliceShare, bobShare, carolShare] = generateSharedKey(
-      derivedKey,
-      2,
-      3,
-    )
+    const [aliceShare, bobShare, carolShare] = share(derivedKey, 2, 3)
 
     const whoWillJoin = [
       new BN(1).toArrayLike(Buffer, 'le', 8),

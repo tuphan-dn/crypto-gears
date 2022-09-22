@@ -1,4 +1,5 @@
 import { encode } from 'bs58'
+import BN from 'bn.js'
 import {
   Connection,
   PublicKey,
@@ -7,33 +8,47 @@ import {
 } from '@solana/web3.js'
 import { getDerivedKey, genRandomness } from '../src/tss.utils'
 import { addPublicKey, addSig, detached } from '../src/tss'
-import { alice, bob, explorer, print } from './utils'
+import { share, pi, yl } from '../src/sss'
+import { master, alice, bob, explorer, print } from './utils'
+
+const cluster = 'https://devnet.genesysgo.net'
+const connection = new Connection(cluster, 'confirmed')
+
+const transfer = async (payer: PublicKey) => {
+  const tx = new Transaction()
+  const ix = SystemProgram.transfer({
+    fromPubkey: payer,
+    toPubkey: new PublicKey('8W6QginLcAydYyMYjxuyKQN56NzeakDE3aRFrAmocS6D'),
+    lamports: 1000,
+  })
+  tx.add(ix)
+  tx.feePayer = payer
+  tx.recentBlockhash = (
+    await connection.getLatestBlockhash('confirmed')
+  ).blockhash
+  return tx
+}
+
+const sendAndConfirm = async (tx: Transaction) => {
+  const txId = await connection.sendRawTransaction(tx.serialize(), {
+    skipPreflight: true,
+    preflightCommitment: 'confirmed',
+  })
+  await connection.confirmTransaction(txId, 'confirmed')
+  return txId
+}
 
 describe('Solana Interaction', function () {
-  let publicKey: PublicKey
-
-  before(() => {
-    publicKey = new PublicKey(addPublicKey(alice.publicKey, bob.publicKey))
+  it('n-out-of-n send tx', async () => {
+    // Setup
+    const publicKey = new PublicKey(
+      addPublicKey(alice.publicKey, bob.publicKey),
+    )
+    print('Master:', publicKey.toBase58())
     print('Alice:', encode(alice.publicKey))
     print('Bob:', encode(bob.publicKey))
-    print('Master public key:', publicKey.toBase58())
-  })
-
-  it('send tx', async () => {
     // Build tx
-    const cluster = 'https://devnet.genesysgo.net'
-    const connection = new Connection(cluster, 'confirmed')
-    const tx = new Transaction()
-    const ix = SystemProgram.transfer({
-      fromPubkey: publicKey,
-      toPubkey: new PublicKey('8W6QginLcAydYyMYjxuyKQN56NzeakDE3aRFrAmocS6D'),
-      lamports: 1000,
-    })
-    tx.add(ix)
-    tx.feePayer = publicKey
-    tx.recentBlockhash = (
-      await connection.getLatestBlockhash('confirmed')
-    ).blockhash
+    const tx = await transfer(publicKey)
     // Sign tx
     const msg = tx.serializeMessage()
     const {
@@ -48,13 +63,40 @@ describe('Solana Interaction', function () {
     const bSig = detached(msg, br, bDerivedKey, R, publicKey.toBuffer())
     // Add sig
     const sig = addSig(aSig, bSig)
-    tx.addSignature(tx.feePayer, Buffer.from(sig))
+    tx.addSignature(publicKey, Buffer.from(sig))
     // Send tx
-    const txId = await connection.sendRawTransaction(tx.serialize(), {
-      skipPreflight: true,
-      preflightCommitment: 'confirmed',
-    })
-    await connection.confirmTransaction(txId, 'confirmed')
+    const txId = await sendAndConfirm(tx)
+    print(explorer(txId, 'devnet'))
+  })
+
+  it('t-out-of-n send tx', async () => {
+    // Setup
+    const publicKey = new PublicKey(master.publicKey)
+    print('Master:', publicKey.toBase58())
+    const derivedKey = getDerivedKey(master.secretKey)
+    const [aliceShare, bobShare, carolShare] = share(derivedKey, 2, 3)
+    // Preround
+    const whoWillJoin = [
+      new BN(1).toArrayLike(Buffer, 'le', 8),
+      new BN(2).toArrayLike(Buffer, 'le', 8),
+    ]
+    const aDerivedKey = yl(aliceShare.subarray(32), pi(whoWillJoin)[0])
+    const bDerivedKey = yl(bobShare.subarray(32), pi(whoWillJoin)[1])
+    // Build tx
+    const tx = await transfer(publicKey)
+    // Sign
+    const {
+      r: [ar, br],
+      R,
+    } = genRandomness(2)
+    const msg = tx.serializeMessage()
+    const aSig = detached(msg, ar, aDerivedKey, R, master.publicKey)
+    const bSig = detached(msg, br, bDerivedKey, R, master.publicKey)
+    // Add sig
+    const sig = addSig(aSig, bSig)
+    tx.addSignature(publicKey, Buffer.from(sig))
+    // Send tx
+    const txId = await sendAndConfirm(tx)
     print(explorer(txId, 'devnet'))
   })
 })

@@ -2,8 +2,8 @@ import { encode } from 'bs58'
 import { BN } from 'bn.js'
 import { getDerivedKey, genRandomness } from './tss.utils'
 import { sign, hash } from './retweetnacl'
-import { addSig, detached, generateSharedKey, verify } from './tss'
-import { pi, yl } from './sss'
+import { addSig, detached, verify } from './tss'
+import { share, pi, yl } from './sss'
 
 const msg = Buffer.from('this is a message', 'utf8')
 const master = sign.keyPair.fromSeed(
@@ -22,7 +22,7 @@ console.log('Bob:', encode(bob.publicKey))
 
 const case1 = () => {
   const derivedKey = getDerivedKey(master.secretKey)
-  const [aliceShare, bobShare, carolShare] = generateSharedKey(derivedKey, 2, 3)
+  const [aliceShare, bobShare, carolShare] = share(derivedKey, 2, 3)
 
   const whoWillJoin = [
     new BN(1).toArrayLike(Buffer, 'le', 8),
