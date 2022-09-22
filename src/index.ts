@@ -2,13 +2,7 @@ import { encode } from 'bs58'
 import { BN } from 'bn.js'
 import { getDerivedKey, genRandomness } from './tss.utils'
 import { sign, hash } from './retweetnacl'
-import {
-  addPublicKey,
-  addSig,
-  detached,
-  generateSharedKey,
-  verify,
-} from './tss'
+import { addSig, detached, generateSharedKey, verify } from './tss'
 import { pi, yl } from './sss'
 
 const msg = Buffer.from('this is a message', 'utf8')

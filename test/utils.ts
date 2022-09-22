@@ -2,6 +2,9 @@ import { Cluster, PublicKey } from '@solana/web3.js'
 import { sign, hash } from '../src/retweetnacl'
 
 export const msg = Buffer.from('this is a message', 'utf8')
+export const master = sign.keyPair.fromSeed(
+  hash(Buffer.from('master', 'utf8')).subarray(0, 32),
+)
 export const alice = sign.keyPair.fromSeed(
   hash(Buffer.from('alice', 'utf8')).subarray(0, 32),
 )
