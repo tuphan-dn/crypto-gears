@@ -34,7 +34,7 @@ Desig is assuming the execution enviroment is Honest-but-Curious where holders a
 
 With this assumption, Desig is secure.
 
-Plus, to precomute the derived key of each holders, they must know who will join in the signature process in advance. In other words, The procotol requires a pre-signature round to commit who will join the process.
+Plus, to precompute the derived keys of holders, they must know who will take part in the signing in advance. In other words, The procotol requires a pre-signing round to commit who will join the process.
 
 # How to test?
 
