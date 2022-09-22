@@ -20,7 +20,7 @@ Desig is just a casual wallet with private key. However, the key isn't hold by a
 
 # How does Desig work?
 
-_TL;DR. Desig is leverage of Homomorphic Encryption and Shamir's Secret Sharing._
+_TL;DR. Desig idea is leveraged by Homomorphic Encryption and Shamir's Secret Sharing._
 
 The master privKey is cryptographically splitted in `n` child privKeys. Each child privKey will be secretly distributed to a corresponding holder.
 
