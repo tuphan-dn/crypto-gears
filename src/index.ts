@@ -1,10 +1,21 @@
 import { encode } from 'bs58'
+import { BN } from 'bn.js'
 import { getDerivedKey, genRandomness } from './tss.utils'
 import { sign, hash } from './retweetnacl'
-import { addPublicKey, addSig, detached, verify } from './tss'
-import { construct, share } from './sss'
+import {
+  addPublicKey,
+  addSig,
+  detached,
+  generateSharedKey,
+  verify,
+} from './tss'
+import { pi, yl } from './sss'
 
 const msg = Buffer.from('this is a message', 'utf8')
+const master = sign.keyPair.fromSeed(
+  hash(Buffer.from('master', 'utf8')).subarray(0, 32),
+)
+
 const alice = sign.keyPair.fromSeed(
   hash(Buffer.from('alice', 'utf8')).subarray(0, 32),
 )
@@ -16,51 +27,30 @@ console.log('Alice:', encode(alice.publicKey))
 console.log('Bob:', encode(bob.publicKey))
 
 const case1 = () => {
+  const derivedKey = getDerivedKey(master.secretKey)
+  const [aliceShare, bobShare, carolShare] = generateSharedKey(derivedKey, 2, 3)
+
+  const whoWillJoin = [
+    new BN(1).toArrayLike(Buffer, 'le', 8),
+    new BN(2).toArrayLike(Buffer, 'le', 8),
+    new BN(3).toArrayLike(Buffer, 'le', 8),
+  ]
+  const aDerivedKey = yl(aliceShare.subarray(32), pi(whoWillJoin)[0])
+  const bDerivedKey = yl(bobShare.subarray(32), pi(whoWillJoin)[1])
+  const cDerivedKey = yl(carolShare.subarray(32), pi(whoWillJoin)[2])
+
+  console.log('Master public key:', encode(master.publicKey))
   const {
-    r: [ar],
+    r: [ar, br, cr],
     R,
-  } = genRandomness()
-  const aDerivedKey = getDerivedKey(alice.secretKey)
-  const sig = detached(msg, ar, aDerivedKey, R, alice.publicKey)
-  console.log('case-1:', verify(msg, sig, alice.publicKey))
-}
+  } = genRandomness(3)
 
-const case2 = () => {
-  const publicKey = addPublicKey(alice.publicKey, bob.publicKey)
-  console.log('Master public key:', encode(publicKey))
-  const {
-    r: [ar, br],
-    R,
-  } = genRandomness(2)
+  const aSig = detached(msg, ar, aDerivedKey, R, master.publicKey)
+  const bSig = detached(msg, br, bDerivedKey, R, master.publicKey)
+  const cSig = detached(msg, cr, cDerivedKey, R, master.publicKey)
 
-  const aDerivedKey = getDerivedKey(alice.secretKey)
-  const aSig = detached(msg, ar, aDerivedKey, R, publicKey)
-  const bDerivedKey = getDerivedKey(bob.secretKey)
-  const bSig = detached(msg, br, bDerivedKey, R, publicKey)
-
-  const sig = addSig(aSig, bSig)
-  console.log('case-2:', verify(msg, sig, publicKey))
-}
-
-const case3 = () => {
-  const derivedKey = getDerivedKey(alice.secretKey)
-  const shares = share(derivedKey, 2, 3)
-  const key = construct(shares.filter((_, i) => i !== 0))
-  console.log(Buffer.from(derivedKey).toString('hex'))
-  console.log(Buffer.from(key).toString('hex'))
+  const sig = addSig(addSig(aSig, bSig), cSig)
+  console.log('case-2:', verify(msg, sig, master.publicKey))
 }
 
 case1()
-case2()
-case3()
-
-const factorial = (n: number) => {
-  let x = 1
-  while (n > 0) x *= n--
-  return x
-}
-const total = (n: number, k: number) => {
-  return factorial(n) / factorial(n - k) / factorial(k)
-}
-
-console.log(total(10, 5))

@@ -2,6 +2,7 @@ import { derivedKeyLength, randomnessLength } from './tss.utils'
 import { addPoint, packPoint, unpackPoint } from './tss.point'
 import { sign } from './retweetnacl'
 import { addScalarsL } from './utils'
+import { share } from './sss'
 
 const {
   lowlevel: { gf, scalarbase, modL, pack, crypto_hash },
@@ -55,6 +56,15 @@ export const addSig = (aSig: Uint8Array, bSig: Uint8Array): Uint8Array => {
     sig[32 + i] = s[i]
   }
   return sig
+}
+
+export const generateSharedKey = (
+  privKey: Uint8Array,
+  t: number,
+  n: number,
+) => {
+  const shares = share(privKey, t, n)
+  return shares
 }
 
 /**

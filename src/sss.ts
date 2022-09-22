@@ -68,6 +68,21 @@ export const pi = (indice: Uint8Array[]): Uint8Array[] => {
     .map((l) => l.toArrayLike(Buffer, 'le', 32))
 }
 
+export const yl = (y: Uint8Array, l: Uint8Array): Uint8Array => {
+  const _y = new BN(y, 16, 'le').toRed(red)
+  const _l = new BN(l, 16, 'le').toRed(red)
+  return _y.redMul(_l).toArrayLike(Buffer, 'le', 32)
+}
+
+export const sigma = (ys: Uint8Array[], ls: Uint8Array[]): Uint8Array => {
+  let sum = new BN(0).toRed(red)
+  ys.map((y, i) => {
+    const _yl = new BN(yl(y, ls[i]), 16, 'le').toRed(red)
+    sum = _yl.redAdd(sum)
+  })
+  return sum.toArrayLike(Buffer, 'le', 32)
+}
+
 export const construct = (shares: Uint8Array[]): Uint8Array => {
   const indice = shares.map((share) => share.subarray(0, 8))
   const ts = shares.map((share) => new BN(share.subarray(8, 16), 16, 'le'))
@@ -80,12 +95,5 @@ export const construct = (shares: Uint8Array[]): Uint8Array => {
     throw new Error('Not enough required number of shares')
   const ys = shares.map((share) => share.subarray(32, 64))
   const ls = pi(indice)
-  let sum = new BN(0).toRed(red)
-  ys.map((y, i) => {
-    const l = ls[i]
-    const _y = new BN(y, 16, 'le').toRed(red)
-    const _l = new BN(l, 16, 'le').toRed(red)
-    sum = _y.redMul(_l).redAdd(sum)
-  })
-  return sum.toArrayLike(Buffer, 'le', 32)
+  return sigma(ys, ls)
 }

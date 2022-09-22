@@ -20,6 +20,8 @@ Desig is just a casual wallet with private key. However, the key isn't hold by a
 
 # How does Desig work?
 
+_TL;DR. Desig is leverage of Homomorphic Encryption and Shamir's Secret Sharing._
+
 The master privKey is cryptographically splitted in `n` child privKeys. Each child privKey will be secretly distributed to a corresponding holder.
 
 To sign a transaction, each holder will independently sign and share his/her signature. After have all signatures, a process will combine these signatures to reconstruct a valid signature of the master privKey.
@@ -31,6 +33,8 @@ Send & Confirm the transaction.
 Desig is assuming the execution enviroment is Honest-but-Curious where holders act correctly following the Desig protocol. However, they will try to gain advantages to learn the others' secrets.
 
 With this assumption, Desig is secure.
+
+Plus, to precomute the derived key of each holders, they must know who will join in the signature process in advance. In other words, The procotol requires a pre-signature round to commit who will join the process.
 
 # How to test?
 
