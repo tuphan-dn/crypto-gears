@@ -1,6 +1,7 @@
-import { addScalars, derivedKeyLength, randomnessLength } from './tss.utils'
+import { derivedKeyLength, randomnessLength } from './tss.utils'
 import { addPoint, packPoint, unpackPoint } from './tss.point'
 import { sign } from './retweetnacl'
+import { addScalarsL } from './utils'
 
 const {
   lowlevel: { gf, scalarbase, modL, pack, crypto_hash },
@@ -46,7 +47,7 @@ export const addSig = (aSig: Uint8Array, bSig: Uint8Array): Uint8Array => {
   const bR = unpackPoint(bSig.subarray(0, 32))
   const R = packPoint(addPoint(aR, bR))
   // Compute s
-  const s = addScalars(aSig.subarray(32, 64), bSig.subarray(32, 64))
+  const s = addScalarsL(aSig.subarray(32, 64), bSig.subarray(32, 64))
   // Concat
   const sig = new Uint8Array(signatureLength)
   for (let i = 0; i < 32; i++) {

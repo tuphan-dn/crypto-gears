@@ -5,10 +5,8 @@ import { msg, alice, bob, print } from './utils'
 
 describe('Threshold Signature Scheme', function () {
   before(() => {
-    console.group()
     print('Alice:', encode(alice.publicKey))
     print('Bob:', encode(bob.publicKey))
-    console.groupEnd()
   })
 
   it('1-out-of-1 sign/verify', async () => {
