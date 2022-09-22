@@ -13,7 +13,7 @@ describe('Threshold Signature Scheme', function () {
 
   it('2-out-of-2 share/reconstruct', async () => {
     const shares = share(derivedKey, 2, 2)
-    const key = construct(shares.filter((_, i) => i !== 0))
+    const key = construct(shares)
     const sharedKey = Buffer.from(derivedKey).toString('hex')
     const constructedKey = Buffer.from(key).toString('hex')
     expect(constructedKey).equals(sharedKey)
@@ -21,7 +21,7 @@ describe('Threshold Signature Scheme', function () {
 
   it('2-out-of-3 share/reconstruct', async () => {
     const shares = share(derivedKey, 2, 3)
-    const key = construct(shares.filter((_, i) => i !== 0))
+    const key = construct(shares.filter((_, i) => i !== 1))
     const sharedKey = Buffer.from(derivedKey).toString('hex')
     const constructedKey = Buffer.from(key).toString('hex')
     expect(constructedKey).equals(sharedKey)
@@ -29,7 +29,7 @@ describe('Threshold Signature Scheme', function () {
 
   it('2-out-of-4 share/reconstruct', async () => {
     const shares = share(derivedKey, 2, 4)
-    const key = construct(shares.filter((_, i) => i !== 0))
+    const key = construct(shares.filter((_, i) => i !== 0 && i !== 1))
     const sharedKey = Buffer.from(derivedKey).toString('hex')
     const constructedKey = Buffer.from(key).toString('hex')
     expect(constructedKey).equals(sharedKey)

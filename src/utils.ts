@@ -15,3 +15,9 @@ export const addScalarsL = (a: Uint8Array, b: Uint8Array): Uint8Array => {
   const _b = new BN(b, 16, 'le').toRed(red)
   return _a.redAdd(_b).toArrayLike(Buffer, 'le', 32)
 }
+
+export const allEquals = (arr: BN[]): boolean => {
+  for (let i = 0; i < arr.length; i++)
+    for (let j = 0; j < arr.length; j++) if (!arr[i].eq(arr[j])) return false
+  return true
+}
