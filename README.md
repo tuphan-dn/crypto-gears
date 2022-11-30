@@ -48,6 +48,10 @@ yarn test
 
 [2] Bernstein, Daniel J., et al. ["TweetNaCl: A crypto library in 100 tweets."](http://tweetnacl.cr.yp.to/tweetnacl-20140917.pdf) International Conference on Cryptology and Information Security in Latin America. Springer, Cham, 2014.
 
-[3] Gennaro, Rosario, and Steven Goldfeder. ["Fast multiparty threshold ECDSA with fast trustless setup."](https://eprint.iacr.org/2019/114.pdf) Proceedings of the 2018 ACM SIGSAC Conference on Computer and Communications Security. 2018.
+[3] Cryptography behind the top 100 Cryptocurrencies. (n.d.). Retrieved November 30, 2022, from http://ethanfast.com/top-crypto.html
 
-[4] Shamir, Adi. ["How to share a secret."](https://en.wikipedia.org/wiki/Shamir%27s_Secret_Sharing) Communications of the ACM 22.11 (1979): 612-613.
+[4] ECDSA: Elliptic curve signatures. ECDSA: Elliptic Curve Signatures - Practical Cryptography for Developers. (n.d.). Retrieved November 30, 2022, from https://cryptobook.nakov.com/digital-signatures/ecdsa-sign-verify-messages
+
+[5] Gennaro, Rosario, and Steven Goldfeder. ["Fast multiparty threshold ECDSA with fast trustless setup."](https://eprint.iacr.org/2019/114.pdf) Proceedings of the 2018 ACM SIGSAC Conference on Computer and Communications Security. 2018.
+
+[6] Shamir, Adi. ["How to share a secret."](https://en.wikipedia.org/wiki/Shamir%27s_Secret_Sharing) Communications of the ACM 22.11 (1979): 612-613.
