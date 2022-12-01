@@ -28,6 +28,10 @@ To sign a transaction, each holder will independently sign and share his/her sig
 
 Send & Confirm the transaction.
 
+# Crytography Foundation
+
+![cryptography foundation](./kernel.png 'Crytography Foundation')
+
 # Desig's Assumption
 
 Desig is assuming the execution enviroment is Honest-but-Curious where holders act correctly following the Desig protocol. However, they will try to gain advantages to learn the others' secrets.
