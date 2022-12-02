@@ -38,11 +38,11 @@ _Fig. 1. Crytography Foundation: ECDSA Secp256k1, EdDSA (ECDSA Ed25519), Shamir'
 
 # Desig's Assumption
 
-Desig is assuming the execution enviroment is Honest-but-Curious where holders act correctly following the Desig protocol. However, they will try to gain advantages to learn the others' secrets.
+Desig is assuming that the execution environment is Honest-but-Curious. In this environment, key holders act correctly following the Desig protocol. However, they will try to gain advantages to learn the others' secret.
 
 With this assumption, Desig is secure.
 
-Plus, to precompute the derived keys of holders, they must know who will take part in the signing in advance. In other words, The procotol requires a pre-signing round to commit who will join the process.
+Plus, to precompute the derived keys of holders, they must know who will take part in the signing in advance. In other words, the procotol requires a pre-signing round to commit who will join the process.
 
 # How to test?
 
