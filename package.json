@@ -2,7 +2,7 @@
   "name": "desig",
   "version": "1.0.0",
   "description": "Decentralized Signatures",
-  "main": "dist/lib/index.js",
+  "main": "dist/index.js",
   "repository": "git@github.com:DescartesNetwork/desig.git",
   "author": "tuphan-dn <tuphan@descartes.network>",
   "license": "MIT",
