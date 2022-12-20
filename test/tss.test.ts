@@ -3,10 +3,12 @@ import BN from 'bn.js'
 import { expect } from 'chai'
 import { getDerivedKey, genRandomness } from '../src/tss.utils'
 import { addPublicKey, addSig, detached, verify } from '../src/tss'
-import { share, pi, yl } from '../src/sss'
+import SecretSharing from '../src/sss'
 import { msg, master, alice, bob, print } from './utils'
 
 describe('Threshold Signature Scheme', function () {
+  const secretSharing = new SecretSharing(SecretSharing.EdDSARed)
+
   before(() => {
     print('Master:', encode(master.publicKey))
     print('Alice:', encode(alice.publicKey))
@@ -43,14 +45,24 @@ describe('Threshold Signature Scheme', function () {
 
   it('t-out-of-n sign/verify', async () => {
     const derivedKey = getDerivedKey(master.secretKey)
-    const [aliceShare, bobShare, carolShare] = share(derivedKey, 2, 3)
+    const [aliceShare, bobShare, carolShare] = secretSharing.share(
+      derivedKey,
+      2,
+      3,
+    )
 
     const whoWillJoin = [
       new BN(1).toArrayLike(Buffer, 'le', 8),
       new BN(2).toArrayLike(Buffer, 'le', 8),
     ]
-    const aDerivedKey = yl(aliceShare.subarray(32), pi(whoWillJoin)[0])
-    const bDerivedKey = yl(bobShare.subarray(32), pi(whoWillJoin)[1])
+    const aDerivedKey = secretSharing.yl(
+      aliceShare.subarray(32),
+      secretSharing.pi(whoWillJoin)[0],
+    )
+    const bDerivedKey = secretSharing.yl(
+      bobShare.subarray(32),
+      secretSharing.pi(whoWillJoin)[1],
+    )
 
     const {
       r: [ar, br],

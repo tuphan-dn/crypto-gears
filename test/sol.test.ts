@@ -8,7 +8,7 @@ import {
 } from '@solana/web3.js'
 import { getDerivedKey, genRandomness } from '../src/tss.utils'
 import { addPublicKey, addSig, detached } from '../src/tss'
-import { share, pi, yl } from '../src/sss'
+import SecretSharing from '../src/sss'
 import { master, alice, bob, explorer, print } from './utils'
 
 const cluster = 'https://devnet.genesysgo.net'
@@ -39,6 +39,8 @@ const sendAndConfirm = async (tx: Transaction) => {
 }
 
 describe('Solana Interaction', function () {
+  const secretSharing = new SecretSharing(SecretSharing.EdDSARed)
+
   it('n-out-of-n send tx', async () => {
     // Setup
     const publicKey = new PublicKey(
@@ -74,14 +76,24 @@ describe('Solana Interaction', function () {
     const publicKey = new PublicKey(master.publicKey)
     print('Master:', publicKey.toBase58())
     const derivedKey = getDerivedKey(master.secretKey)
-    const [aliceShare, bobShare, carolShare] = share(derivedKey, 2, 3)
+    const [aliceShare, bobShare, carolShare] = secretSharing.share(
+      derivedKey,
+      2,
+      3,
+    )
     // Preround
     const whoWillJoin = [
       new BN(1).toArrayLike(Buffer, 'le', 8),
       new BN(2).toArrayLike(Buffer, 'le', 8),
     ]
-    const aDerivedKey = yl(aliceShare.subarray(32), pi(whoWillJoin)[0])
-    const bDerivedKey = yl(bobShare.subarray(32), pi(whoWillJoin)[1])
+    const aDerivedKey = secretSharing.yl(
+      aliceShare.subarray(32),
+      secretSharing.pi(whoWillJoin)[0],
+    )
+    const bDerivedKey = secretSharing.yl(
+      bobShare.subarray(32),
+      secretSharing.pi(whoWillJoin)[1],
+    )
     // Build tx
     const tx = await transfer(publicKey)
     // Sign
