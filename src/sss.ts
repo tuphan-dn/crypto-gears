@@ -8,7 +8,7 @@
  * - The tuple (t,n,id) must be identical to all shares in a same group
  */
 
-import { CURVE, utils } from '@noble/ed25519'
+import { utils } from '@noble/ed25519'
 import BN from 'bn.js'
 
 export type RedBN = ReturnType<BN['toRed']>
