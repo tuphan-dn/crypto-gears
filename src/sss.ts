@@ -20,6 +20,7 @@ export type ExtractedShare = {
   share: BN
 }
 
+export const shareLength = 64
 export const allEquals = (arr: BN[]): boolean => {
   for (let i = 0; i < arr.length; i++)
     for (let j = i + 1; j < arr.length; j++)
@@ -30,8 +31,24 @@ export const allEquals = (arr: BN[]): boolean => {
 class SecretSharing {
   constructor(public readonly red: BN.ReductionContext) {}
 
-  static EdDSARed = BN.red(new BN(CURVE.l.toString()))
-  static ECDSARed = BN.red(new BN(2))
+  static EdDSA = BN.red(new BN(CURVE.l.toString()))
+  static ECDSA = BN.red(new BN(2))
+
+  private validateShares = (shares: Uint8Array[]) => {
+    shares.forEach((share) => {
+      if (share.length !== shareLength) throw new Error('Invalid share length')
+    })
+    const indice = shares.map((share) => share.subarray(0, 8))
+    const ts = shares.map((share) => new BN(share.subarray(8, 16), 16, 'le'))
+    const ns = shares.map((share) => new BN(share.subarray(16, 24), 16, 'le'))
+    const ids = shares.map((share) => new BN(share.subarray(24, 32), 16, 'le'))
+    if (!allEquals(ts) || !allEquals(ns) || !allEquals(ids))
+      throw new Error('The shares is not in a same group')
+    const t = ts[0]
+    if (new BN(indice.length).lt(t))
+      throw new Error('Not enough required number of shares')
+    return { indice, t, n: ns[0], id: ids[0] }
+  }
 
   pi = (indice: Uint8Array[]): Uint8Array[] => {
     const xs = indice.map((index) => new BN(index, 16, 'le').toRed(this.red))
@@ -62,6 +79,7 @@ class SecretSharing {
   }
 
   extract = (share: Uint8Array): ExtractedShare => {
+    this.validateShares([share])
     return {
       index: new BN(share.subarray(0, 8), 16, 'le'),
       t: new BN(share.subarray(8, 16), 16, 'le'),
@@ -72,15 +90,7 @@ class SecretSharing {
   }
 
   construct = (shares: Uint8Array[]): Uint8Array => {
-    const indice = shares.map((share) => share.subarray(0, 8))
-    const ts = shares.map((share) => new BN(share.subarray(8, 16), 16, 'le'))
-    const ns = shares.map((share) => new BN(share.subarray(16, 24), 16, 'le'))
-    const ids = shares.map((share) => new BN(share.subarray(24, 32), 16, 'le'))
-    if (!allEquals(ts) || !allEquals(ns) || !allEquals(ids))
-      throw new Error('The shares is not in a same group')
-    const t = ts[0]
-    if (new BN(indice.length).lt(t))
-      throw new Error('Not enough required number of shares')
+    const { indice } = this.validateShares(shares)
     const ys = shares.map((share) => share.subarray(32, 64))
     const ls = this.pi(indice)
     return this.sigma(ys, ls)
@@ -92,7 +102,7 @@ class SecretSharing {
     const T = new BN(t).toArrayLike(Buffer, 'le', 8)
     const N = new BN(n).toArrayLike(Buffer, 'le', 8)
     const ID = utils.randomBytes(8)
-    // Rand coefficients
+    // Randomize coefficients
     const a = new BN(key, 16, 'le').toRed(this.red)
     const coefficients = [a]
     for (let i = 0; i < t; i++) {
@@ -108,7 +118,7 @@ class SecretSharing {
       }
       return sum
     }
-    // Compute share
+    // Compute shares
     const shares: RedBN[] = []
     for (let i = 0; i < n; i++) {
       const x = new BN(i + 1).toRed(this.red)

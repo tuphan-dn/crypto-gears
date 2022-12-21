@@ -1,4 +1,3 @@
-import { encode } from 'bs58'
 import BN from 'bn.js'
 import {
   Connection,
@@ -6,8 +5,7 @@ import {
   SystemProgram,
   Transaction,
 } from '@solana/web3.js'
-import { getDerivedKey, genRandomness } from '../src/tss.utils'
-import { addPublicKey, addSig, detached } from '../src/tss'
+import EdTSS, { EdCurve, EdUtil } from '../src/edtss'
 import SecretSharing from '../src/sss'
 import { master, alice, bob, explorer, print } from './utils'
 
@@ -39,16 +37,16 @@ const sendAndConfirm = async (tx: Transaction) => {
 }
 
 describe('Solana Interaction', function () {
-  const secretSharing = new SecretSharing(SecretSharing.EdDSARed)
+  const secretSharing = new SecretSharing(SecretSharing.EdDSA)
 
   it('n-out-of-n send tx', async () => {
     // Setup
     const publicKey = new PublicKey(
-      addPublicKey(alice.publicKey, bob.publicKey),
+      EdCurve.addPoint(alice.publicKey.toBuffer(), bob.publicKey.toBuffer()),
     )
     print('Master:', publicKey.toBase58())
-    print('Alice:', encode(alice.publicKey))
-    print('Bob:', encode(bob.publicKey))
+    print('Alice:', alice.publicKey.toBase58())
+    print('Bob:', bob.publicKey.toBase58())
     // Build tx
     const tx = await transfer(publicKey)
     // Sign tx
@@ -56,15 +54,15 @@ describe('Solana Interaction', function () {
     const {
       r: [ar, br],
       R,
-    } = genRandomness(2)
+    } = EdUtil.genRandomness(2)
     // Alice signs
-    const aDerivedKey = getDerivedKey(alice.secretKey)
-    const aSig = detached(msg, ar, aDerivedKey, R, publicKey.toBuffer())
+    const aDerivedKey = EdUtil.getDerivedKey(alice.secretKey)
+    const aSig = EdTSS.sign(msg, ar, aDerivedKey, R, publicKey.toBuffer())
     // Bob signs
-    const bDerivedKey = getDerivedKey(bob.secretKey)
-    const bSig = detached(msg, br, bDerivedKey, R, publicKey.toBuffer())
+    const bDerivedKey = EdUtil.getDerivedKey(bob.secretKey)
+    const bSig = EdTSS.sign(msg, br, bDerivedKey, R, publicKey.toBuffer())
     // Add sig
-    const sig = addSig(aSig, bSig)
+    const sig = EdTSS.addSig(aSig, bSig)
     tx.addSignature(publicKey, Buffer.from(sig))
     // Send tx
     const txId = await sendAndConfirm(tx)
@@ -75,7 +73,7 @@ describe('Solana Interaction', function () {
     // Setup
     const publicKey = new PublicKey(master.publicKey)
     print('Master:', publicKey.toBase58())
-    const derivedKey = getDerivedKey(master.secretKey)
+    const derivedKey = EdUtil.getDerivedKey(master.secretKey)
     const [aliceShare, bobShare, carolShare] = secretSharing.share(
       derivedKey,
       2,
@@ -100,12 +98,24 @@ describe('Solana Interaction', function () {
     const {
       r: [ar, br],
       R,
-    } = genRandomness(2)
+    } = EdUtil.genRandomness(2)
     const msg = tx.serializeMessage()
-    const aSig = detached(msg, ar, aDerivedKey, R, master.publicKey)
-    const bSig = detached(msg, br, bDerivedKey, R, master.publicKey)
+    const aSig = EdTSS.sign(
+      msg,
+      ar,
+      aDerivedKey,
+      R,
+      master.publicKey.toBuffer(),
+    )
+    const bSig = EdTSS.sign(
+      msg,
+      br,
+      bDerivedKey,
+      R,
+      master.publicKey.toBuffer(),
+    )
     // Add sig
-    const sig = addSig(aSig, bSig)
+    const sig = EdTSS.addSig(aSig, bSig)
     tx.addSignature(publicKey, Buffer.from(sig))
     // Send tx
     const txId = await sendAndConfirm(tx)

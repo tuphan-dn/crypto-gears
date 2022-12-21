@@ -1,50 +1,51 @@
-import { encode } from 'bs58'
 import BN from 'bn.js'
 import { expect } from 'chai'
-import { getDerivedKey, genRandomness } from '../src/tss.utils'
-import { addPublicKey, addSig, detached, verify } from '../src/tss'
+import EdTSS, { EdCurve, EdUtil } from '../src/edtss'
 import SecretSharing from '../src/sss'
 import { msg, master, alice, bob, print } from './utils'
 
 describe('Threshold Signature Scheme', function () {
-  const secretSharing = new SecretSharing(SecretSharing.EdDSARed)
+  const secretSharing = new SecretSharing(SecretSharing.EdDSA)
 
   before(() => {
-    print('Master:', encode(master.publicKey))
-    print('Alice:', encode(alice.publicKey))
-    print('Bob:', encode(bob.publicKey))
+    print('Master:', master.publicKey.toBase58())
+    print('Alice:', alice.publicKey.toBase58())
+    print('Bob:', bob.publicKey.toBase58())
   })
 
   it('1-out-of-1 sign/verify', async () => {
     const {
       r: [ar],
       R,
-    } = genRandomness()
-    const aDerivedKey = getDerivedKey(alice.secretKey)
-    const sig = detached(msg, ar, aDerivedKey, R, alice.publicKey)
-    const ok = verify(msg, sig, alice.publicKey)
+    } = EdUtil.genRandomness()
+    const aDerivedKey = EdUtil.getDerivedKey(alice.secretKey)
+    const sig = EdTSS.sign(msg, ar, aDerivedKey, R, alice.publicKey.toBuffer())
+    const ok = EdTSS.verify(msg, sig, alice.publicKey.toBuffer())
     expect(ok).equal(true)
   })
 
   it('n-out-of-n sign/verify', async () => {
-    const publicKey = addPublicKey(alice.publicKey, bob.publicKey)
+    const publicKey = EdCurve.addPoint(
+      alice.publicKey.toBuffer(),
+      bob.publicKey.toBuffer(),
+    )
     const {
       r: [ar, br],
       R,
-    } = genRandomness(2)
+    } = EdUtil.genRandomness(2)
 
-    const aDerivedKey = getDerivedKey(alice.secretKey)
-    const aSig = detached(msg, ar, aDerivedKey, R, publicKey)
-    const bDerivedKey = getDerivedKey(bob.secretKey)
-    const bSig = detached(msg, br, bDerivedKey, R, publicKey)
+    const aDerivedKey = EdUtil.getDerivedKey(alice.secretKey)
+    const aSig = EdTSS.sign(msg, ar, aDerivedKey, R, publicKey)
+    const bDerivedKey = EdUtil.getDerivedKey(bob.secretKey)
+    const bSig = EdTSS.sign(msg, br, bDerivedKey, R, publicKey)
 
-    const sig = addSig(aSig, bSig)
-    const ok = verify(msg, sig, publicKey)
+    const sig = EdTSS.addSig(aSig, bSig)
+    const ok = EdTSS.verify(msg, sig, publicKey)
     expect(ok).equal(true)
   })
 
   it('t-out-of-n sign/verify', async () => {
-    const derivedKey = getDerivedKey(master.secretKey)
+    const derivedKey = EdUtil.getDerivedKey(master.secretKey)
     const [aliceShare, bobShare, carolShare] = secretSharing.share(
       derivedKey,
       2,
@@ -67,13 +68,25 @@ describe('Threshold Signature Scheme', function () {
     const {
       r: [ar, br],
       R,
-    } = genRandomness(2)
+    } = EdUtil.genRandomness(2)
 
-    const aSig = detached(msg, ar, aDerivedKey, R, master.publicKey)
-    const bSig = detached(msg, br, bDerivedKey, R, master.publicKey)
+    const aSig = EdTSS.sign(
+      msg,
+      ar,
+      aDerivedKey,
+      R,
+      master.publicKey.toBuffer(),
+    )
+    const bSig = EdTSS.sign(
+      msg,
+      br,
+      bDerivedKey,
+      R,
+      master.publicKey.toBuffer(),
+    )
 
-    const sig = addSig(aSig, bSig)
-    const ok = verify(msg, sig, master.publicKey)
+    const sig = EdTSS.addSig(aSig, bSig)
+    const ok = EdTSS.verify(msg, sig, master.publicKey.toBuffer())
     expect(ok).equal(true)
   })
 })

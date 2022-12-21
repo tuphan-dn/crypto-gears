@@ -1,15 +1,15 @@
-import { Cluster, PublicKey } from '@solana/web3.js'
-import { sign, hash } from '../src/retweetnacl'
+import { sha512 } from '@noble/hashes/sha512'
+import { Cluster, Keypair, PublicKey } from '@solana/web3.js'
 
 export const msg = Buffer.from('this is a message', 'utf8')
-export const master = sign.keyPair.fromSeed(
-  hash(Buffer.from('master', 'utf8')).subarray(0, 32),
+export const master = Keypair.fromSeed(
+  sha512(Buffer.from('master', 'utf8')).subarray(0, 32),
 )
-export const alice = sign.keyPair.fromSeed(
-  hash(Buffer.from('alice', 'utf8')).subarray(0, 32),
+export const alice = Keypair.fromSeed(
+  sha512(Buffer.from('alice', 'utf8')).subarray(0, 32),
 )
-export const bob = sign.keyPair.fromSeed(
-  hash(Buffer.from('bob', 'utf8')).subarray(0, 32),
+export const bob = Keypair.fromSeed(
+  sha512(Buffer.from('bob', 'utf8')).subarray(0, 32),
 )
 
 export const print = (...args: any[]) => {

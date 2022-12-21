@@ -1,12 +1,12 @@
 import { expect } from 'chai'
 import { encode } from 'bs58'
-import { getDerivedKey } from '../src/tss.utils'
 import SecretSharing from '../src/sss'
 import { alice, print } from './utils'
+import { EdUtil } from '../src/edtss'
 
 describe('Threshold Signature Scheme', function () {
-  const secretSharing = new SecretSharing(SecretSharing.EdDSARed)
-  const derivedKey = getDerivedKey(alice.secretKey)
+  const secretSharing = new SecretSharing(SecretSharing.EdDSA)
+  const derivedKey = EdUtil.getDerivedKey(alice.secretKey)
 
   before(() => {
     print('Alice Derived Key:', encode(derivedKey))
