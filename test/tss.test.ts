@@ -19,7 +19,7 @@ describe('Threshold Signature Scheme', function () {
       R,
     } = EdUtil.genRandomness()
     const aDerivedKey = EdUtil.getDerivedKey(alice.secretKey)
-    const sig = EdTSS.sign(msg, ar, aDerivedKey, R, alice.publicKey.toBuffer())
+    const sig = EdTSS.sign(msg, R, alice.publicKey.toBuffer(), ar, aDerivedKey)
     const ok = EdTSS.verify(msg, sig, alice.publicKey.toBuffer())
     expect(ok).equal(true)
   })
@@ -35,9 +35,9 @@ describe('Threshold Signature Scheme', function () {
     } = EdUtil.genRandomness(2)
 
     const aDerivedKey = EdUtil.getDerivedKey(alice.secretKey)
-    const aSig = EdTSS.sign(msg, ar, aDerivedKey, R, publicKey)
+    const aSig = EdTSS.sign(msg, R, publicKey, ar, aDerivedKey)
     const bDerivedKey = EdUtil.getDerivedKey(bob.secretKey)
-    const bSig = EdTSS.sign(msg, br, bDerivedKey, R, publicKey)
+    const bSig = EdTSS.sign(msg, R, publicKey, br, bDerivedKey)
 
     const sig = EdTSS.addSig(aSig, bSig)
     const ok = EdTSS.verify(msg, sig, publicKey)
@@ -72,17 +72,17 @@ describe('Threshold Signature Scheme', function () {
 
     const aSig = EdTSS.sign(
       msg,
-      ar,
-      aDerivedKey,
       R,
       master.publicKey.toBuffer(),
+      ar,
+      aDerivedKey,
     )
     const bSig = EdTSS.sign(
       msg,
-      br,
-      bDerivedKey,
       R,
       master.publicKey.toBuffer(),
+      br,
+      bDerivedKey,
     )
 
     const sig = EdTSS.addSig(aSig, bSig)

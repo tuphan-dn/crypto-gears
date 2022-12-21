@@ -101,11 +101,13 @@ class EdTSS {
    * @returns
    */
   static sign = (
+    // Public
     msg: Uint8Array,
-    r: Uint8Array,
-    derivedKey: Uint8Array,
     R: Uint8Array,
     publicKey: Uint8Array,
+    // Private
+    r: Uint8Array,
+    derivedKey: Uint8Array,
   ) => {
     if (r.length !== EdUtil.randomnessLength)
       throw new Error('bad randomness size')
@@ -124,7 +126,7 @@ class EdTSS {
     // H(R,A,M)
     for (let i = 0; i < 32; i++) sm[32 + i] = publicKey[i] // Assign A
     const h = sha512(sm)
-    // s = x = r + H(R,A,M)a
+    // s = r + H(R,A,M)a
     const _r = EdCurve.encode(r)
     const _h = EdCurve.encode(h)
     const _a = EdCurve.encode(derivedKey)
@@ -134,8 +136,8 @@ class EdTSS {
     for (let i = 0; i < 32; i++) sm[32 + i] = s[i]
 
     // sm = [rG,s,msg]
-    const p = EdCurve.baseMul(r)
-    for (let i = 0; i < 32; i++) sm[i] = p[i]
+    const rG = EdCurve.baseMul(r)
+    for (let i = 0; i < 32; i++) sm[i] = rG[i]
 
     return sm.subarray(0, EdTSS.signatureLength)
   }

@@ -28,12 +28,18 @@ const transfer = async (payer: PublicKey) => {
 }
 
 const sendAndConfirm = async (tx: Transaction) => {
-  const txId = await connection.sendRawTransaction(tx.serialize(), {
+  const signature = await connection.sendRawTransaction(tx.serialize(), {
     skipPreflight: true,
     preflightCommitment: 'confirmed',
   })
-  await connection.confirmTransaction(txId, 'confirmed')
-  return txId
+  const { blockhash, lastValidBlockHeight } =
+    await connection.getLatestBlockhash()
+  await connection.confirmTransaction({
+    signature,
+    blockhash,
+    lastValidBlockHeight,
+  })
+  return signature
 }
 
 describe('Solana Interaction', function () {
@@ -57,10 +63,10 @@ describe('Solana Interaction', function () {
     } = EdUtil.genRandomness(2)
     // Alice signs
     const aDerivedKey = EdUtil.getDerivedKey(alice.secretKey)
-    const aSig = EdTSS.sign(msg, ar, aDerivedKey, R, publicKey.toBuffer())
+    const aSig = EdTSS.sign(msg, R, publicKey.toBuffer(), ar, aDerivedKey)
     // Bob signs
     const bDerivedKey = EdUtil.getDerivedKey(bob.secretKey)
-    const bSig = EdTSS.sign(msg, br, bDerivedKey, R, publicKey.toBuffer())
+    const bSig = EdTSS.sign(msg, R, publicKey.toBuffer(), br, bDerivedKey)
     // Add sig
     const sig = EdTSS.addSig(aSig, bSig)
     tx.addSignature(publicKey, Buffer.from(sig))
@@ -102,17 +108,17 @@ describe('Solana Interaction', function () {
     const msg = tx.serializeMessage()
     const aSig = EdTSS.sign(
       msg,
-      ar,
-      aDerivedKey,
       R,
       master.publicKey.toBuffer(),
+      ar,
+      aDerivedKey,
     )
     const bSig = EdTSS.sign(
       msg,
-      br,
-      bDerivedKey,
       R,
       master.publicKey.toBuffer(),
+      br,
+      bDerivedKey,
     )
     // Add sig
     const sig = EdTSS.addSig(aSig, bSig)
