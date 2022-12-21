@@ -5,7 +5,7 @@ import SecretSharing from '../src/sss'
 import { msg, master, alice, bob, print } from './utils'
 
 describe('Threshold Signature Scheme', function () {
-  const secretSharing = new SecretSharing(SecretSharing.EdDSA)
+  const secretSharing = new SecretSharing(EdCurve.red)
 
   before(() => {
     print('Master:', master.publicKey.toBase58())

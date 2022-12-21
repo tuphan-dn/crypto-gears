@@ -2,10 +2,10 @@ import { expect } from 'chai'
 import { encode } from 'bs58'
 import SecretSharing from '../src/sss'
 import { alice, print } from './utils'
-import { EdUtil } from '../src/edtss'
+import { EdCurve, EdUtil } from '../src/edtss'
 
 describe('Threshold Signature Scheme', function () {
-  const secretSharing = new SecretSharing(SecretSharing.EdDSA)
+  const secretSharing = new SecretSharing(EdCurve.red)
   const derivedKey = EdUtil.getDerivedKey(alice.secretKey)
 
   before(() => {

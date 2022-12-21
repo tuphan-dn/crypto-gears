@@ -31,9 +31,6 @@ export const allEquals = (arr: BN[]): boolean => {
 class SecretSharing {
   constructor(public readonly red: BN.ReductionContext) {}
 
-  static EdDSA = BN.red(new BN(CURVE.l.toString()))
-  static ECDSA = BN.red(new BN(2))
-
   private validateShares = (shares: Uint8Array[]) => {
     shares.forEach((share) => {
       if (share.length !== shareLength) throw new Error('Invalid share length')

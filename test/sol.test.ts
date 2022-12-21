@@ -43,7 +43,7 @@ const sendAndConfirm = async (tx: Transaction) => {
 }
 
 describe('Solana Interaction', function () {
-  const secretSharing = new SecretSharing(SecretSharing.EdDSA)
+  const secretSharing = new SecretSharing(EdCurve.red)
 
   it('n-out-of-n send tx', async () => {
     // Setup
