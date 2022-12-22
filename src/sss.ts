@@ -11,7 +11,6 @@
 import { utils } from '@noble/ed25519'
 import BN from 'bn.js'
 
-export type RedBN = ReturnType<BN['toRed']>
 export type ExtractedShare = {
   index: BN
   t: BN
@@ -20,20 +19,22 @@ export type ExtractedShare = {
   share: BN
 }
 
-export const shareLength = 64
-export const allEquals = (arr: BN[]): boolean => {
+const allEquals = (arr: BN[]): boolean => {
   for (let i = 0; i < arr.length; i++)
     for (let j = i + 1; j < arr.length; j++)
       if (!arr[i].eq(arr[j])) return false
   return true
 }
 
-class SecretSharing {
+export class SecretSharing {
   constructor(public readonly red: BN.ReductionContext) {}
+
+  static shareLength = 64
 
   private validateShares = (shares: Uint8Array[]) => {
     shares.forEach((share) => {
-      if (share.length !== shareLength) throw new Error('Invalid share length')
+      if (share.length !== SecretSharing.shareLength)
+        throw new Error('Invalid share length')
     })
     const indice = shares.map((share) => share.subarray(0, 8))
     const ts = shares.map((share) => new BN(share.subarray(8, 16), 16, 'le'))
@@ -107,7 +108,7 @@ class SecretSharing {
       coefficients.push(r)
     }
     // Build the polynomial
-    const y = (x: RedBN): RedBN => {
+    const y = (x: ReturnType<BN['toRed']>) => {
       let sum = new BN(0).toRed(this.red)
       for (let i = 0; i < t; i++) {
         const k = new BN(i)
@@ -116,7 +117,7 @@ class SecretSharing {
       return sum
     }
     // Compute shares
-    const shares: RedBN[] = []
+    const shares: ReturnType<BN['toRed']>[] = []
     for (let i = 0; i < n; i++) {
       const x = new BN(i + 1).toRed(this.red)
       shares.push(y(x))
@@ -134,5 +135,3 @@ class SecretSharing {
     })
   }
 }
-
-export default SecretSharing

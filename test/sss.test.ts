@@ -1,8 +1,7 @@
 import { expect } from 'chai'
 import { encode } from 'bs58'
-import SecretSharing from '../src/sss'
 import { alice, print } from './utils'
-import { EdCurve, EdUtil } from '../src/edtss'
+import { SecretSharing, EdCurve, EdUtil } from '../dist'
 
 describe('Threshold Signature Scheme', function () {
   const secretSharing = new SecretSharing(EdCurve.red)

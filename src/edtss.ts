@@ -1,7 +1,6 @@
 import { CURVE, Point, sync, utils } from '@noble/ed25519'
 import { sha512 } from '@noble/hashes/sha512'
 import BN from 'bn.js'
-import { RedBN } from 'sss'
 
 /**
  * EdCurve
@@ -9,8 +8,7 @@ import { RedBN } from 'sss'
 export class EdCurve {
   static red = BN.red(new BN(CURVE.l.toString()))
 
-  static encode = (r: Uint8Array): RedBN =>
-    new BN(r, 16, 'le').toRed(EdCurve.red)
+  static encode = (r: Uint8Array) => new BN(r, 16, 'le').toRed(EdCurve.red)
 
   static decode = (r: BN, length: number): Uint8Array =>
     r.toArrayLike(Buffer, 'le', length)
@@ -60,7 +58,7 @@ export class EdUtil {
 /**
  * EdTSS
  */
-class EdTSS {
+export class EdTSS {
   static signatureLength = 64
   static publicKeyLength = 32
 
@@ -149,5 +147,3 @@ class EdTSS {
   static verify = (msg: Uint8Array, sig: Uint8Array, pubkey: Uint8Array) =>
     sync.verify(sig, msg, pubkey)
 }
-
-export default EdTSS

@@ -1,6 +1,6 @@
 {
-  "name": "desig",
-  "version": "1.0.0",
+  "name": "@desig/core",
+  "version": "0.0.1",
   "description": "Decentralized Signatures",
   "main": "dist/index.js",
   "repository": "git@github.com:DescartesNetwork/desig.git",
@@ -12,7 +12,7 @@
     "start": "nodemon src/index.ts",
     "predeploy": "typedoc --excludePrivate --excludeProtected ./src/index.ts",
     "deploy": "gh-pages -d docs",
-    "pretest": "yarn clean",
+    "pretest": "yarn build",
     "test": "mocha --require ts-node/register -t 120000 test/**/*.test.ts",
     "clean": "rimraf dist"
   },
@@ -24,11 +24,13 @@
     "bs58": "^5.0.0"
   },
   "devDependencies": {
+    "@rollup/plugin-terser": "^0.2.1",
     "@types/bn.js": "^5.1.1",
     "@types/chai": "^4.3.3",
     "@types/mocha": "^9.1.1",
     "@types/node": "^18.7.18",
     "chai": "^4.3.6",
+    "esbuild": "^0.16.10",
     "gh-pages": "^4.0.0",
     "mocha": "^10.0.0",
     "nodemon": "^2.0.20",

@@ -1,7 +1,6 @@
 import BN from 'bn.js'
 import { expect } from 'chai'
-import EdTSS, { EdCurve, EdUtil } from '../src/edtss'
-import SecretSharing from '../src/sss'
+import { SecretSharing, EdTSS, EdCurve, EdUtil } from '../dist'
 import { msg, master, alice, bob, print } from './utils'
 
 describe('Threshold Signature Scheme', function () {

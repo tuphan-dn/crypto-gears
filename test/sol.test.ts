@@ -5,8 +5,7 @@ import {
   SystemProgram,
   Transaction,
 } from '@solana/web3.js'
-import EdTSS, { EdCurve, EdUtil } from '../src/edtss'
-import SecretSharing from '../src/sss'
+import { SecretSharing, EdTSS, EdCurve, EdUtil } from '../dist'
 import { master, alice, bob, explorer, print } from './utils'
 
 const cluster = 'https://devnet.genesysgo.net'
