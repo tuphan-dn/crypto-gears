@@ -32,7 +32,7 @@ Send & Confirm the transaction.
 
 These following formulas are the main cryptography foundation that Desig is based on.
 
-![cryptography foundation](./kernel.png)
+![cryptography foundation](https://i.imgur.com/KJiUJP7.png)
 
 _Fig. 1. Crytography Foundation: ECDSA Secp256k1, EdDSA (ECDSA Ed25519), Shamir's Secret Sharing._
 
