@@ -4,12 +4,13 @@
  *
  * The implementation is available for t-out-of-n models
  * The share is in little-endian format
- * - [0,8,index] [8,16,t] [16,24,n] [24,32,id] [32,63,share]
+ * - [0,8,index] [8,16,t] [16,24,n] [24,32,id] [32,64,share]
  * - The tuple (t,n,id) must be identical to all shares in a same group
  */
 
 import { utils } from '@noble/ed25519'
 import BN from 'bn.js'
+import { RedBN } from './types'
 
 export type ExtractedShare = {
   index: BN
@@ -108,7 +109,7 @@ export class SecretSharing {
       coefficients.push(r)
     }
     // Build the polynomial
-    const y = (x: ReturnType<BN['toRed']>) => {
+    const y = (x: RedBN): RedBN => {
       let sum = new BN(0).toRed(this.red)
       for (let i = 0; i < t; i++) {
         const k = new BN(i)
@@ -117,7 +118,7 @@ export class SecretSharing {
       return sum
     }
     // Compute shares
-    const shares: ReturnType<BN['toRed']>[] = []
+    const shares: RedBN[] = []
     for (let i = 0; i < n; i++) {
       const x = new BN(i + 1).toRed(this.red)
       shares.push(y(x))

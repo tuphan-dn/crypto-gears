@@ -1,6 +1,7 @@
 import { CURVE, Point, sync, utils } from '@noble/ed25519'
 import { sha512 } from '@noble/hashes/sha512'
 import BN from 'bn.js'
+import { RedBN } from './types'
 
 /**
  * EdCurve
@@ -8,15 +9,16 @@ import BN from 'bn.js'
 export class EdCurve {
   static red = BN.red(new BN(CURVE.l.toString()))
 
-  static encode = (r: Uint8Array) => new BN(r, 16, 'le').toRed(EdCurve.red)
+  static encode = (r: Uint8Array): RedBN =>
+    new BN(r, 16, 'le').toRed(EdCurve.red)
 
   static decode = (r: BN, length: number): Uint8Array =>
     r.toArrayLike(Buffer, 'le', length)
 
-  static mod = (r: Uint8Array) =>
+  static mod = (r: Uint8Array): Uint8Array =>
     new BN(r, 16, 'le').toRed(EdCurve.red).toArrayLike(Buffer, 'le', r.length)
 
-  static baseMul = (r: Uint8Array) => {
+  static baseMul = (r: Uint8Array): Uint8Array => {
     const bn = new BN(r, 16, 'le')
     const bi = BigInt(bn.toString())
     return Point.BASE.multiply(bi).toRawBytes()
