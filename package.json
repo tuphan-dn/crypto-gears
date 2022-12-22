@@ -4,7 +4,10 @@
   "description": "Decentralized Signatures",
   "main": "dist/index.js",
   "repository": "git@github.com:DescartesNetwork/desig.git",
-  "author": "tuphan-dn <tuphan@descartes.network>",
+  "author": {
+    "name": "Tu Phan",
+    "email": "tuphan@descartes.network"
+  },
   "license": "MIT",
   "scripts": {
     "prebuild": "yarn clean",
@@ -30,7 +33,6 @@
     "@types/mocha": "^9.1.1",
     "@types/node": "^18.7.18",
     "chai": "^4.3.6",
-    "esbuild": "^0.16.10",
     "gh-pages": "^4.0.0",
     "mocha": "^10.0.0",
     "nodemon": "^2.0.20",
