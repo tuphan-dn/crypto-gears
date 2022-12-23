@@ -13,17 +13,17 @@ import BN from 'bn.js'
 import { RedBN } from './types'
 
 export type ExtractedShare = {
-  index: BN
-  t: BN
-  n: BN
-  id: BN
-  share: BN
+  index: Uint8Array // 8 bytes
+  t: Uint8Array // 8 bytes
+  n: Uint8Array // 8 bytes
+  id: Uint8Array // 8 bytes
+  share: Uint8Array // 32 bytes
 }
 
-const allEquals = (arr: BN[]): boolean => {
+const allEqual = (arr: Uint8Array[]): boolean => {
   for (let i = 0; i < arr.length; i++)
     for (let j = i + 1; j < arr.length; j++)
-      if (!arr[i].eq(arr[j])) return false
+      if (Buffer.compare(arr[i], arr[j]) !== 0) return false
   return true
 }
 
@@ -32,19 +32,29 @@ export class SecretSharing {
 
   static shareLength = 64
 
+  static extract = (share: Uint8Array): ExtractedShare => {
+    return {
+      index: share.subarray(0, 8),
+      t: share.subarray(8, 16),
+      n: share.subarray(16, 24),
+      id: share.subarray(24, 32),
+      share: share.subarray(32, 64),
+    }
+  }
+
   private validateShares = (shares: Uint8Array[]) => {
     shares.forEach((share) => {
       if (share.length !== SecretSharing.shareLength)
         throw new Error('Invalid share length')
     })
-    const indice = shares.map((share) => share.subarray(0, 8))
-    const ts = shares.map((share) => new BN(share.subarray(8, 16), 16, 'le'))
-    const ns = shares.map((share) => new BN(share.subarray(16, 24), 16, 'le'))
-    const ids = shares.map((share) => new BN(share.subarray(24, 32), 16, 'le'))
-    if (!allEquals(ts) || !allEquals(ns) || !allEquals(ids))
+    const indice = shares.map((share) => SecretSharing.extract(share).index)
+    const ts = shares.map((share) => SecretSharing.extract(share).t)
+    const ns = shares.map((share) => SecretSharing.extract(share).n)
+    const ids = shares.map((share) => SecretSharing.extract(share).id)
+    if (!allEqual(ts) || !allEqual(ns) || !allEqual(ids))
       throw new Error('The shares is not in a same group')
     const t = ts[0]
-    if (new BN(indice.length).lt(t))
+    if (new BN(indice.length).lt(new BN(t, 16, 'le')))
       throw new Error('Not enough required number of shares')
     return { indice, t, n: ns[0], id: ids[0] }
   }
@@ -75,17 +85,6 @@ export class SecretSharing {
       sum = _yl.redAdd(sum)
     })
     return sum.toArrayLike(Buffer, 'le', 32)
-  }
-
-  extract = (share: Uint8Array): ExtractedShare => {
-    this.validateShares([share])
-    return {
-      index: new BN(share.subarray(0, 8), 16, 'le'),
-      t: new BN(share.subarray(8, 16), 16, 'le'),
-      n: new BN(share.subarray(16, 24), 16, 'le'),
-      id: new BN(share.subarray(24, 32), 16, 'le'),
-      share: new BN(share.subarray(32, 64), 16, 'le'),
-    }
   }
 
   construct = (shares: Uint8Array[]): Uint8Array => {
