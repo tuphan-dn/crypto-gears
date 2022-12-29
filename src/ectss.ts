@@ -1,4 +1,4 @@
-import { CURVE, Point } from '@noble/secp256k1'
+import { CURVE, Point, getPublicKey } from '@noble/secp256k1'
 import BN from 'bn.js'
 import { RedBN } from './types'
 
@@ -29,5 +29,14 @@ export class ECCurve {
     const a = Point.fromHex(aPubkey.subarray(0, 32))
     const b = Point.fromHex(bPubkey.subarray(0, 32))
     return a.add(b).toRawBytes()
+  }
+}
+
+export class ECUtil {
+  static randomnessLength = 64
+  static derivedKeyLength = 32
+
+  static getPublicKey = async (privateKey: Uint8Array) => {
+    return getPublicKey(privateKey)
   }
 }
