@@ -1,4 +1,4 @@
-import { CURVE, Point, getPublicKey } from '@noble/secp256k1'
+import { CURVE, Point, getPublicKey, sign } from '@noble/secp256k1'
 import BN from 'bn.js'
 import { RedBN } from './types'
 
@@ -38,5 +38,12 @@ export class ECUtil {
 
   static getPublicKey = (privateKey: Uint8Array) => {
     return getPublicKey(privateKey)
+  }
+
+  static sign = (
+    msg: Uint8Array,
+    privateKey: Uint8Array,
+  ): Promise<Uint8Array> => {
+    return sign(msg, privateKey)
   }
 }

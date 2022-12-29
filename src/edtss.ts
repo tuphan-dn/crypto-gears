@@ -1,4 +1,4 @@
-import { CURVE, Point, sync, utils } from '@noble/ed25519'
+import { CURVE, Point, sync, utils, sign } from '@noble/ed25519'
 import { sha512 } from '@noble/hashes/sha512'
 import BN from 'bn.js'
 import { RedBN } from './types'
@@ -60,6 +60,13 @@ export class EdUtil {
 
   static getPublicKey = (privateKey: Uint8Array) => {
     return sync.getPublicKey(privateKey)
+  }
+
+  static sign = (
+    msg: Uint8Array,
+    privateKey: Uint8Array,
+  ): Promise<Uint8Array> => {
+    return sign(msg, privateKey)
   }
 }
 
