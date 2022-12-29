@@ -36,7 +36,7 @@ export class ECUtil {
   static randomnessLength = 64
   static derivedKeyLength = 32
 
-  static getPublicKey = async (privateKey: Uint8Array) => {
+  static getPublicKey = (privateKey: Uint8Array) => {
     return getPublicKey(privateKey)
   }
 }

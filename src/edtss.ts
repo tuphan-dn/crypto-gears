@@ -1,4 +1,4 @@
-import { CURVE, Point, sync, utils, getPublicKey } from '@noble/ed25519'
+import { CURVE, Point, sync, utils } from '@noble/ed25519'
 import { sha512 } from '@noble/hashes/sha512'
 import BN from 'bn.js'
 import { RedBN } from './types'
@@ -58,8 +58,8 @@ export class EdUtil {
     return EdCurve.mod(derivedKey)
   }
 
-  static getPublicKey = async (privateKey: Uint8Array) => {
-    return getPublicKey(privateKey)
+  static getPublicKey = (privateKey: Uint8Array) => {
+    return sync.getPublicKey(privateKey)
   }
 }
 
