@@ -6,6 +6,8 @@ import { RedBN } from './types'
  * ECCurve
  */
 export class ECCurve {
+  static code = 'ecdsa'
+
   static red = BN.red(new BN(CURVE.P.toString()))
 
   static encode = (r: Uint8Array): RedBN =>

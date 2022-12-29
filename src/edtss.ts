@@ -7,6 +7,8 @@ import { RedBN } from './types'
  * EdCurve
  */
 export class EdCurve {
+  static code = 'eddsa'
+
   static red = BN.red(new BN(CURVE.l.toString()))
 
   static encode = (r: Uint8Array): RedBN =>

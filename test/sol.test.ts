@@ -52,9 +52,9 @@ describe('Solana Interaction', function () {
     print('Master:', publicKey.toBase58())
     print('Alice:', alice.publicKey.toBase58())
     print('Bob:', bob.publicKey.toBase58())
-    // Build tx
+    // Build the tx
     const tx = await transfer(publicKey)
-    // Sign tx
+    // Serialize the tx
     const msg = tx.serializeMessage()
     const {
       r: [ar, br],
@@ -66,10 +66,10 @@ describe('Solana Interaction', function () {
     // Bob signs
     const bDerivedKey = EdUtil.getDerivedKey(bob.secretKey)
     const bSig = EdTSS.sign(msg, R, publicKey.toBuffer(), br, bDerivedKey)
-    // Add sig
+    // Add signatures
     const sig = EdTSS.addSig(aSig, bSig)
     tx.addSignature(publicKey, Buffer.from(sig))
-    // Send tx
+    // Send the tx
     const txId = await sendAndConfirm(tx)
     print(explorer(txId, 'devnet'))
   })
@@ -97,14 +97,15 @@ describe('Solana Interaction', function () {
       bobShare.subarray(32),
       secretSharing.pi(whoWillJoin)[1],
     )
-    // Build tx
+    // Build the tx
     const tx = await transfer(publicKey)
-    // Sign
+    // Serialize the tx
     const {
       r: [ar, br],
       R,
     } = EdUtil.genRandomness(2)
     const msg = tx.serializeMessage()
+    // Sign the tx
     const aSig = EdTSS.sign(
       msg,
       R,
@@ -119,10 +120,10 @@ describe('Solana Interaction', function () {
       br,
       bDerivedKey,
     )
-    // Add sig
+    // Add signatures
     const sig = EdTSS.addSig(aSig, bSig)
     tx.addSignature(publicKey, Buffer.from(sig))
-    // Send tx
+    // Send the tx
     const txId = await sendAndConfirm(tx)
     print(explorer(txId, 'devnet'))
   })
