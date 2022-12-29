@@ -42,6 +42,16 @@ export class SecretSharing {
     }
   }
 
+  static compress = ({
+    index,
+    t,
+    n,
+    id,
+    share,
+  }: ExtractedShare): Uint8Array => {
+    return utils.concatBytes(index, t, n, id, share)
+  }
+
   private validateShares = (shares: Uint8Array[]) => {
     shares.forEach((share) => {
       if (share.length !== SecretSharing.shareLength)
