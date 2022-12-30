@@ -1,6 +1,6 @@
 {
   "name": "@desig/core",
-  "version": "0.0.15",
+  "version": "0.0.16",
   "description": "The Decentralized Signature",
   "main": "dist/index.js",
   "repository": "git@github.com:DescartesNetwork/desig.git",
@@ -32,7 +32,6 @@
     "bs58": "^5.0.0"
   },
   "devDependencies": {
-    "@rollup/plugin-terser": "^0.2.1",
     "@types/bn.js": "^5.1.1",
     "@types/chai": "^4.3.3",
     "@types/mocha": "^9.1.1",
