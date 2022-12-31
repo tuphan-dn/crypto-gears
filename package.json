@@ -1,6 +1,6 @@
 {
   "name": "@desig/core",
-  "version": "0.0.16",
+  "version": "0.0.17",
   "description": "The Decentralized Signature",
   "main": "dist/index.js",
   "repository": "git@github.com:DescartesNetwork/desig.git",
@@ -33,6 +33,7 @@
   },
   "devDependencies": {
     "@types/bn.js": "^5.1.1",
+    "@types/buffer-xor": "^2.0.0",
     "@types/chai": "^4.3.3",
     "@types/mocha": "^9.1.1",
     "@types/node": "^18.7.18",

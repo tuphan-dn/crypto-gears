@@ -6,4 +6,5 @@ utils.sha512Sync = (...m) => sha512(utils.concatBytes(...m))
 export * from './sss'
 export * from './ectss'
 export * from './edtss'
+export * from './elgamal'
 export * from './types'

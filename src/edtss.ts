@@ -1,13 +1,13 @@
 import { CURVE, Point, sync, utils, sign } from '@noble/ed25519'
 import { sha512 } from '@noble/hashes/sha512'
 import BN from 'bn.js'
-import { RedBN } from './types'
+import { CryptoScheme, RedBN } from './types'
 
 /**
  * EdCurve
  */
 export class EdCurve {
-  static code = 'eddsa'
+  static scheme: CryptoScheme = 'eddsa'
 
   static red = BN.red(new BN(CURVE.l.toString()))
 
@@ -18,18 +18,24 @@ export class EdCurve {
     r.toArrayLike(Buffer, 'le', length)
 
   static mod = (r: Uint8Array): Uint8Array =>
-    new BN(r, 16, 'le').toRed(EdCurve.red).toArrayLike(Buffer, 'le', r.length)
+    EdCurve.decode(EdCurve.encode(r), r.length)
 
   static baseMul = (r: Uint8Array): Uint8Array => {
-    const bn = new BN(r, 16, 'le')
+    const bn = EdCurve.encode(r)
     const bi = BigInt(bn.toString())
     return Point.BASE.multiply(bi).toRawBytes()
   }
 
-  static addPoint = (aPubkey: Uint8Array, bPubkey: Uint8Array): Uint8Array => {
-    const a = Point.fromHex(aPubkey.subarray(0, 32))
-    const b = Point.fromHex(bPubkey.subarray(0, 32))
+  static addPoint = (pointA: Uint8Array, pointB: Uint8Array): Uint8Array => {
+    const a = Point.fromHex(pointA.subarray(0, 32))
+    const b = Point.fromHex(pointB.subarray(0, 32))
     return a.add(b).toRawBytes()
+  }
+
+  static mulScalar = (point: Uint8Array, scalar: Uint8Array): Uint8Array => {
+    const p = Point.fromHex(point.subarray(0, 32))
+    const s = BigInt(EdCurve.encode(scalar).toString())
+    return p.multiply(s).toRawBytes()
   }
 }
 
