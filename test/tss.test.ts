@@ -1,91 +1,85 @@
+import { utils } from '@noble/ed25519'
 import BN from 'bn.js'
 import { expect } from 'chai'
 import { SecretSharing, EdTSS, EdCurve, EdUtil } from '../dist'
-import { msg, master, alice, bob, print } from './utils'
+import { msg, master, print } from './utils'
 
 describe('Threshold Signature Scheme', function () {
   const secretSharing = new SecretSharing(EdCurve.red)
 
   before(() => {
     print('Master:', master.publicKey.toBase58())
-    print('Alice:', alice.publicKey.toBase58())
-    print('Bob:', bob.publicKey.toBase58())
   })
 
-  it('1-out-of-1 sign/verify', async () => {
-    const {
-      r: [ar],
-      R,
-    } = EdUtil.genRandomness()
-    const aDerivedKey = EdUtil.getDerivedKey(alice.secretKey)
-    const sig = EdTSS.sign(msg, R, alice.publicKey.toBuffer(), ar, aDerivedKey)
-    const ok = EdTSS.verify(msg, sig, alice.publicKey.toBuffer())
-    expect(ok).equal(true)
-  })
+  it('2-out-of-2 sign/verify', async () => {
+    const publicKey = master.publicKey.toBuffer()
+    const derivedKey = EdUtil.getDerivedKey(master.secretKey)
+    const t = 2
+    const n = 2
 
-  it('n-out-of-n sign/verify', async () => {
-    const publicKey = EdCurve.addPoint(
-      alice.publicKey.toBuffer(),
-      bob.publicKey.toBuffer(),
+    const indice = [1, 2].map((i) => new BN(i).toArrayLike(Buffer, 'le', 8))
+    const pi = secretSharing.pi(indice)
+    const sharedKeys = secretSharing.share(derivedKey, t, n)
+    const { shares, R } = EdUtil.shareRandomness(t, n)
+
+    // Multi sig
+    const sharedSigs = sharedKeys
+      .slice(0, t)
+      .map((sharedKey, i) =>
+        EdTSS.sign(
+          msg,
+          R,
+          publicKey,
+          shares[i].subarray(32),
+          sharedKey.subarray(32),
+        ),
+      )
+    // Correct sig
+    const correctSigs = sharedSigs.map((sharedSig, i) =>
+      utils.concatBytes(
+        EdCurve.mulScalar(sharedSig.subarray(0, 32), pi[i]),
+        secretSharing.yl(sharedSig.subarray(32), pi[i]),
+      ),
     )
-    const {
-      r: [ar, br],
-      R,
-    } = EdUtil.genRandomness(2)
 
-    const aDerivedKey = EdUtil.getDerivedKey(alice.secretKey)
-    const aSig = EdTSS.sign(msg, R, publicKey, ar, aDerivedKey)
-    const bDerivedKey = EdUtil.getDerivedKey(bob.secretKey)
-    const bSig = EdTSS.sign(msg, R, publicKey, br, bDerivedKey)
-
-    const sig = EdTSS.addSig(aSig, bSig)
+    const sig = EdTSS.addSig(correctSigs[0], correctSigs[1])
     const ok = EdTSS.verify(msg, sig, publicKey)
     expect(ok).equal(true)
   })
 
-  it('t-out-of-n sign/verify', async () => {
+  it('2-out-of-3 sign/verify', async () => {
+    const publicKey = master.publicKey.toBuffer()
     const derivedKey = EdUtil.getDerivedKey(master.secretKey)
-    const [aliceShare, bobShare, carolShare] = secretSharing.share(
-      derivedKey,
-      2,
-      3,
+    const t = 2
+    const n = 3
+
+    const indice = [1, 2].map((i) => new BN(i).toArrayLike(Buffer, 'le', 8))
+    const pi = secretSharing.pi(indice)
+    const sharedKeys = secretSharing.share(derivedKey, t, n)
+    const { shares, R } = EdUtil.shareRandomness(t, n)
+
+    // Multi sig
+    const sharedSigs = sharedKeys
+      .slice(0, t)
+      .map((sharedKey, i) =>
+        EdTSS.sign(
+          msg,
+          R,
+          publicKey,
+          shares[i].subarray(32),
+          sharedKey.subarray(32),
+        ),
+      )
+    // Correct sig
+    const correctSigs = sharedSigs.map((sharedSig, i) =>
+      utils.concatBytes(
+        EdCurve.mulScalar(sharedSig.subarray(0, 32), pi[i]),
+        secretSharing.yl(sharedSig.subarray(32), pi[i]),
+      ),
     )
 
-    const whoWillJoin = [
-      new BN(1).toArrayLike(Buffer, 'le', 8),
-      new BN(2).toArrayLike(Buffer, 'le', 8),
-    ]
-    const aDerivedKey = secretSharing.yl(
-      aliceShare.subarray(32),
-      secretSharing.pi(whoWillJoin)[0],
-    )
-    const bDerivedKey = secretSharing.yl(
-      bobShare.subarray(32),
-      secretSharing.pi(whoWillJoin)[1],
-    )
-
-    const {
-      r: [ar, br],
-      R,
-    } = EdUtil.genRandomness(2)
-
-    const aSig = EdTSS.sign(
-      msg,
-      R,
-      master.publicKey.toBuffer(),
-      ar,
-      aDerivedKey,
-    )
-    const bSig = EdTSS.sign(
-      msg,
-      R,
-      master.publicKey.toBuffer(),
-      br,
-      bDerivedKey,
-    )
-
-    const sig = EdTSS.addSig(aSig, bSig)
-    const ok = EdTSS.verify(msg, sig, master.publicKey.toBuffer())
+    const sig = EdTSS.addSig(correctSigs[0], correctSigs[1])
+    const ok = EdTSS.verify(msg, sig, publicKey)
     expect(ok).equal(true)
   })
 })

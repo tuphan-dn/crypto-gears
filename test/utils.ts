@@ -5,13 +5,6 @@ export const msg = Buffer.from('this is a message', 'utf8')
 export const master = Keypair.fromSeed(
   sha512(Buffer.from('master', 'utf8')).subarray(0, 32),
 )
-export const alice = Keypair.fromSeed(
-  sha512(Buffer.from('alice', 'utf8')).subarray(0, 32),
-)
-export const bob = Keypair.fromSeed(
-  sha512(Buffer.from('bob', 'utf8')).subarray(0, 32),
-)
-
 export const print = (...args: any[]) => {
   console.group()
   console.log('\x1b[36m↳\x1b[0m', ...args, '')

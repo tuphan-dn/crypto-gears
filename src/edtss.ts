@@ -1,6 +1,7 @@
 import { CURVE, Point, sync, utils, sign } from '@noble/ed25519'
 import { sha512 } from '@noble/hashes/sha512'
 import BN from 'bn.js'
+import { SecretSharing } from './sss'
 import { CryptoScheme, RedBN } from './types'
 
 /**
@@ -40,17 +41,15 @@ export class EdCurve {
 }
 
 export class EdUtil {
-  static randomnessLength = 64
+  static randomnessLength = 32
   static derivedKeyLength = 32
 
-  static genRandomness = (num = 1) => {
-    const r: Uint8Array[] = []
-    for (let i = 0; i < num; i++)
-      r.push(EdCurve.mod(utils.randomBytes(EdUtil.randomnessLength)))
-    let sum = new BN(0).toRed(EdCurve.red)
-    r.forEach((e) => (sum = sum.redAdd(EdCurve.encode(e))))
-    const R = EdCurve.baseMul(EdCurve.decode(sum, 32))
-    return { r, R }
+  static shareRandomness = (t: number, n: number) => {
+    const r = EdCurve.mod(utils.randomBytes(EdUtil.randomnessLength))
+    const secretSharing = new SecretSharing(EdCurve.red)
+    const shares = secretSharing.share(r, t, n)
+    const R = EdCurve.baseMul(r)
+    return { shares, R }
   }
 
   static getDerivedKey = (privateKey: Uint8Array) => {
