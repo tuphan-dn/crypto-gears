@@ -1,4 +1,4 @@
-# Decentralized Signature (Desig)
+# Decentralized Signature | Desig
 
 _Multisig requires smart contracts to counts the number of signatures while Desig splits a private key into multiple pieces and each party will use its piece to sign the transaction._
 
@@ -63,3 +63,7 @@ yarn test
 [5] Gennaro, Rosario, and Steven Goldfeder. ["Fast multiparty threshold ECDSA with fast trustless setup."](https://eprint.iacr.org/2019/114.pdf) Proceedings of the 2018 ACM SIGSAC Conference on Computer and Communications Security. 2018.
 
 [6] Shamir, Adi. ["How to share a secret."](https://en.wikipedia.org/wiki/Shamir%27s_Secret_Sharing) Communications of the ACM 22.11 (1979): 612-613.
+
+## Copyright
+
+Desig © 2023, All Rights Reserved.
