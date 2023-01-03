@@ -1,7 +1,17 @@
 {
   "name": "@desig/core",
-  "version": "0.0.19",
+  "version": "0.0.20",
   "description": "The Decentralized Signature",
+  "homepage": "https://core.desig.io/",
+  "keywords": [
+    "sss",
+    "tss",
+    "eddsa",
+    "ecdsa",
+    "ed25519",
+    "secp256k1",
+    "elgamal"
+  ],
   "main": "dist/index.js",
   "repository": "git@github.com:DescartesNetwork/desig.git",
   "author": {
