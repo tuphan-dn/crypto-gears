@@ -42,7 +42,7 @@ describe('Threshold Signature Scheme', function () {
       ),
     )
 
-    const sig = EdTSS.addSig(correctSigs[0], correctSigs[1])
+    const sig = EdTSS.addSig(...correctSigs)
     const ok = EdTSS.verify(msg, sig, publicKey)
     expect(ok).equal(true)
   })
@@ -78,7 +78,7 @@ describe('Threshold Signature Scheme', function () {
       ),
     )
 
-    const sig = EdTSS.addSig(correctSigs[0], correctSigs[1])
+    const sig = EdTSS.addSig(...correctSigs)
     const ok = EdTSS.verify(msg, sig, publicKey)
     expect(ok).equal(true)
   })

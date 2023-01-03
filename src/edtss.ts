@@ -83,30 +83,31 @@ export class EdTSS {
   static publicKeyLength = 32
 
   /**
-   * Add shared signatures
-   * @param aSig
-   * @param bSig
+   * Add partial signatures
+   * @param sigs Partial signatures
    * @returns
    */
-  static addSig = (aSig: Uint8Array, bSig: Uint8Array): Uint8Array => {
-    if (
-      aSig.length !== EdTSS.signatureLength ||
-      bSig.length !== EdTSS.signatureLength
-    )
-      throw new Error('Invalid signature length')
+  static addSig = (...sigs: Uint8Array[]): Uint8Array => {
+    for (const sig of sigs)
+      if (sig.length !== EdTSS.signatureLength)
+        throw new Error('Invalid signature length')
+    const rs = sigs.map((sig) => sig.subarray(0, 32))
+    const ss = sigs.map((sig) => sig.subarray(32))
     // Compute R
-    const R = EdCurve.addPoint(aSig.subarray(0, 32), bSig.subarray(0, 32))
+    const R = rs.reduce(
+      (sum, r) => EdCurve.addPoint(sum, r),
+      Point.ZERO.toRawBytes(),
+    )
     // Compute s
-    const a = EdCurve.encode(aSig.subarray(32, 64))
-    const b = EdCurve.encode(bSig.subarray(32, 64))
-    const s = EdCurve.decode(a.redAdd(b), 32)
+    const S = EdCurve.decode(
+      ss.reduce(
+        (sum, s) => sum.redAdd(EdCurve.encode(s)),
+        new BN(0).toRed(EdCurve.red),
+      ),
+      32,
+    )
     // Concat
-    const sig = new Uint8Array(EdTSS.signatureLength)
-    for (let i = 0; i < 32; i++) {
-      sig[i] = R[i]
-      sig[32 + i] = s[i]
-    }
-    return sig
+    return utils.concatBytes(R, S)
   }
 
   /**
