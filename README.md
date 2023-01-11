@@ -90,7 +90,7 @@ Let's $a$ and $b$ be 2 secrets that are shared by these functions:
 
 $$
 \begin{align*}
-  g(x) &= a + g_1x + ... + g_{t-1}x^{t-1}
+  g(x) &= a + g_1x + ... + g_{t-1}x^{t-1} \\
   h(x) &= b + h_1x + ... + h_{t-1}x^{t-1}
 \end{align*}
 $$
