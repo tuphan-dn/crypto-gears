@@ -117,6 +117,8 @@ The the multiplication will transform a $t-out-of-n$ SSS to a $(2t-1)-out-of-n$ 
 | $h$    | $b$  | $b_1$    | $...$ | $b_{t-1}$        | $b_t$    |
 | $f=gh$ | $ab$ | $a_1b_1$ | $...$ | $a_{t-1}b_{t-1}$ | $a_tb_t$ |
 
+Apply Ben-Or's Degree Reduction:
+
 $$
 \begin{cases}
   z^{(1)}(x) = a_1b_1 + z^{(1)}_1x + ... + z^{(1)}_{t-1}x^{t-1}\\
@@ -126,6 +128,24 @@ $$
   z^{(t)}(x) = a_tb_t + z^{(t)}_1x + ... + z^{(t)}_{t-1}x^{t-1}
 \end{cases}
 $$
+
+Then,
+
+$$
+\begin{align*}
+  z(x) &= \sum_{i=1}^t \gamma_i z^{(i)}(x)\\
+
+  &= \sum_{i=1}^t \gamma_i a_ib_i + \sum_{i=1}^t \gamma_i z^{(i)}_1x + ... + \sum_{i=1}^t \gamma_i z^{(i)}_{t-1}x^{t-1}\\
+
+  &= ab + \sum_{i=1}^t \gamma_i z^{(i)}_1x + ... + \sum_{i=1}^t \gamma_i z^{(i)}_{t-1}x^{t-1}
+\end{align*}
+$$
+
+By $z(x)$, we can share the new ones as the folowing table:
+
+| $x$ | $0$  | $1$        | $...$ | $t-1$          | $t$        |
+| --- | ---- | ---------- | ----- | -------------- | ---------- |
+| $z$ | $ab$ | $\omega_1$ | $...$ | $\omega_{t-1}$ | $\omega_t$ |
 
 # Desig's Assumption
 
