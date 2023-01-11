@@ -95,7 +95,7 @@ $$
 \end{align*}
 $$
 
-A operation $\cdot$ is homomorphic iff $c_i = a_i \cdot b_i$ and $REC(c_{i \in \{i..n\}_t}) = a \cdot b$.
+A operation $\oplus$ is homomorphic iff $c_i = a_i \oplus b_i$ and $REC(c_{i \in \{i..n\}_t}) = a \oplus b$.
 
 ### Multiplicative Homomorphism
 
