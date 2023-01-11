@@ -34,32 +34,17 @@ These following formulas are the main cryptography foundation that Desig is base
 
 ## Elliptic Curve Digital Signature Algorithms
 
-$$
-\begin{align*}
-  ECDSA \; (Secp256k1)&: s = r^{-1}(H(m)+R_xPriv) \\
-  EdDSA \; (Ed25519)&: s = r+H(R,Pub,m)Priv
-\end{align*}
-$$
+**ECDSA (Secp256k1).** $s = r^{-1}(H(m)+R_xPriv)$
+
+**EdDSA (Ed25519).** $s = r+H(R,Pub,m)Priv$
 
 ## ElGamal Publickey Encryption
 
-### Key Generation
+**Key Generation.** $Pub=G*Priv$
 
-$$
-Pub=G*Priv
-$$
+**Encryption.** $E(m)={c=m+r*Pub,s=r*G}$
 
-### Encryption
-
-$$
-E(m)={c=m+r*Pub,s=r*G}
-$$
-
-### Decryption
-
-$$
-D(c,s,Priv)={m=c-s*Priv}
-$$
+**Decryption.** $D(c,s,Priv)={m=c-s*Priv}$
 
 ## Shamir Secret Sharing
 
@@ -73,10 +58,10 @@ $$
 \end{align*}
 $$
 
-Efficient reconstruction:
+Effective reconstruction:
 
 $$
-Shamir \; Secret \; Sharing: f(0) = \sum_{i=1}^{t} y_i \prod_{j=1,j \neq i}^{t} \frac{x_j-x_i}{x_j}
+f(0) = \sum_{i=1}^{t} y_i \prod_{j=1,j \neq i}^{t} \frac{x_j-x_i}{x_j}
 $$
 
 ### Homomorphism in Shamir Secret Sharing
