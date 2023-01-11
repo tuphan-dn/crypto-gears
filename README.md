@@ -99,8 +99,7 @@ A operation $\oplus$ is homomorphic iff $c_i = a_i \oplus b_i$ and $REC(c_{i \in
 
 ### Additive Homomorphism
 
-Addition is homomorphic to SSS because $f(x) = g(x) + h(x) = (a+b) + (g_1+h_1)x + (g_{t-1}+h_{t-1})x^{t-1}
-$ and the shares $c_i = a_i + b_i$.
+Addition is homomorphic to SSS because $f(x) = g(x) + h(x) = (a+b) + (g_1+h_1)x + (g_{t-1}+h_{t-1})x^{t-1}$ and the shares $c_i = a_i + b_i$.
 
 ### Multiplicative Homomorphism
 
