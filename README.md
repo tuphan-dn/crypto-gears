@@ -51,19 +51,19 @@ $$
 ### Key Generation
 
 $$
-Pub=G*Priv
+Pub = G  \cdot Priv
 $$
 
 ### Encryption
 
 $$
-E(m)=\{c=m+r*Pub,s=r*G\}
+E(m)=\{ c = m + r \cdot Pub, s = r \cdot G\}
 $$
 
 ### Decryption
 
 $$
-D(c,s,Priv)=\{m=c-s*Priv\}
+D(c,s,Priv) = \{ m = c - s \cdot Priv \}
 $$
 
 ## Shamir Secret Sharing
