@@ -66,7 +66,7 @@ $$
 D(c,s,Priv) = \{ m = c - s \cdot Priv \}
 $$
 
-## Shamir Secret Sharing
+## Shamir Secret Sharing (SSS)
 
 Let $s$ be the secret in a $t-out-of-n$ Shamir Secret Sharning Scheme.
 
@@ -84,7 +84,7 @@ $$
 f(0) = \sum_{i=1}^{t} y_i \prod_{j=1,j \neq i}^{t} \frac{x_j-x_i}{x_j}
 $$
 
-### Homomorphism in Shamir Secret Sharing
+### Homomorphism in SSS
 
 Let's $a$ and $b$ be 2 secrets that are shared by these functions:
 
@@ -96,6 +96,11 @@ $$
 $$
 
 A operation $\oplus$ is homomorphic iff $c_i = a_i \oplus b_i$ and $REC(c_{i \in \{i..n\}_t}) = a \oplus b$.
+
+### Additive Homomorphism
+
+Addition is homomorphic to SSS because $f(x) = g(x) + h(x) = (a+b) + (g_1+h_1)x + (g_{t-1}+h_{t-1})x^{t-1}
+$ and the shares $c_i = a_i + b_i$.
 
 ### Multiplicative Homomorphism
 
