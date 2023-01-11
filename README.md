@@ -103,6 +103,30 @@ Addition is homomorphic to SSS because $f(x) = g(x) + h(x) = (a+b) + (g_1+h_1)x 
 
 ### Multiplicative Homomorphism
 
+We have
+
+$$
+f(x) = g(x)h(x) = ab + ... + g_{t-1} h_{t-1} x^{2(t-1)}
+$$
+
+The the multiplication will transform a $t-out-of-n$ SSS to a $(2t-1)-out-of-n$ SSS.
+
+| $x$    | $0$  | $1$      | $...$ | $t-1$            | $t$      |
+| ------ | ---- | -------- | ----- | ---------------- | -------- |
+| $g$    | $a$  | $a_1$    | $...$ | $a_{t-1}$        | $a_t$    |
+| $h$    | $b$  | $b_1$    | $...$ | $b_{t-1}$        | $b_t$    |
+| $f=gh$ | $ab$ | $a_1b_1$ | $...$ | $a_{t-1}b_{t-1}$ | $a_tb_t$ |
+
+$$
+\begin{cases}
+  z^{(1)}(x) = a_1b_1 + z^{(1)}_1x + ... + z^{(1)}_{t-1}x^{t-1}\\
+  z^{(2)}(x) = a_2b_2 + z^{(2)}_1x + ... + z^{(2)}_{t-1}x^{t-1}\\
+  ...\\
+  z^{(t-1)}(x) = a_{t-1}b_{t-1} + z^{(t-1)}_1x + ... + z^{(t-1)}_{t-1}x^{t-1}\\
+  z^{(t)}(x) = a_tb_t + z^{(t)}_1x + ... + z^{(t)}_{t-1}x^{t-1}
+\end{cases}
+$$
+
 # Desig's Assumption
 
 Desig is assuming that the execution environment is Honest-but-Curious. In this environment, key holders act correctly following the Desig protocol. However, they will try to gain advantages to learn the others' secret.
