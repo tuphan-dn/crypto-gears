@@ -34,17 +34,37 @@ These following formulas are the main cryptography foundation that Desig is base
 
 ## Elliptic Curve Digital Signature Algorithms
 
-**ECDSA (Secp256k1):** $$s = r^{-1}(H(m)+R_xPriv)$$
+### ECDSA (Secp256k1)
 
-**EdDSA (Ed25519):** $$s = r+H(R,Pub,m)Priv$$
+$$
+s = r^{-1}(H(m)+R_xPriv)
+$$
+
+### EdDSA (Ed25519)
+
+$$
+s = r+H(R,Pub,m)Priv
+$$
 
 ## ElGamal Publickey Encryption
 
-**Key Generation:** $$Pub=G*Priv$$
+### Key Generation
 
-**Encryption:** $$E(m)=\{c=m+r*Pub,s=r*G\}$$
+$$
+Pub=G*Priv
+$$
 
-**Decryption:** $$D(c,s,Priv)=\{m=c-s*Priv\}$$
+### Encryption
+
+$$
+E(m)=\{c=m+r*Pub,s=r*G\}
+$$
+
+### Decryption
+
+$$
+D(c,s,Priv)=\{m=c-s*Priv\}
+$$
 
 ## Shamir Secret Sharing
 
