@@ -134,9 +134,7 @@ Then,
 $$
 \begin{align*}
   z(x) &= \sum_{i=1}^t \gamma_i z^{(i)}(x)\\
-
   &= \sum_{i=1}^t \gamma_i a_ib_i + \sum_{i=1}^t \gamma_i z^{(i)}_1x + ... + \sum_{i=1}^t \gamma_i z^{(i)}_{t-1}x^{t-1}\\
-
   &= ab + \sum_{i=1}^t \gamma_i z^{(i)}_1x + ... + \sum_{i=1}^t \gamma_i z^{(i)}_{t-1}x^{t-1}
 \end{align*}
 $$
