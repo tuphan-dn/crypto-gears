@@ -43,7 +43,7 @@ const sendAndConfirm = async (tx: Transaction) => {
 }
 
 describe('Solana Interaction', function () {
-  const secretSharing = new SecretSharing(EdCurve.red)
+  const secretSharing = new SecretSharing(EdCurve.red, 'le')
 
   it('2-out-of-2 send tx', async () => {
     const t = 2
@@ -56,8 +56,6 @@ describe('Solana Interaction', function () {
     const tx = await transfer(master.publicKey)
     // Serialize the tx
     const msg = tx.serializeMessage()
-    const indice = [1, 2].map((i) => new BN(i).toArrayLike(Buffer, 'le', 8))
-    const pi = secretSharing.pi(indice)
     const { shares, R } = EdUtil.shareRandomness(t, n)
     // Multi sig
     const sharedSigs = sharedKeys
@@ -72,6 +70,8 @@ describe('Solana Interaction', function () {
         ),
       )
     // Correct sig
+    const indice = [1, 2].map((i) => new BN(i).toArrayLike(Buffer, 'le', 8))
+    const pi = secretSharing.pi(indice)
     const correctSigs = sharedSigs.map((sharedSig, i) =>
       utils.concatBytes(
         EdCurve.mulScalar(sharedSig.subarray(0, 32), pi[i]),
@@ -97,8 +97,6 @@ describe('Solana Interaction', function () {
     const tx = await transfer(master.publicKey)
     // Serialize the tx
     const msg = tx.serializeMessage()
-    const indice = [1, 2].map((i) => new BN(i).toArrayLike(Buffer, 'le', 8))
-    const pi = secretSharing.pi(indice)
     const { shares, R } = EdUtil.shareRandomness(t, n)
     // Multi sig
     const sharedSigs = sharedKeys
@@ -113,6 +111,8 @@ describe('Solana Interaction', function () {
         ),
       )
     // Correct sig
+    const indice = [1, 2].map((i) => new BN(i).toArrayLike(Buffer, 'le', 8))
+    const pi = secretSharing.pi(indice)
     const correctSigs = sharedSigs.map((sharedSig, i) =>
       utils.concatBytes(
         EdCurve.mulScalar(sharedSig.subarray(0, 32), pi[i]),

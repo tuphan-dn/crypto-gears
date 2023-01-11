@@ -28,7 +28,10 @@ const allEqual = (arr: Uint8Array[]): boolean => {
 }
 
 export class SecretSharing {
-  constructor(public readonly red: BN.ReductionContext) {}
+  constructor(
+    public readonly red: BN.ReductionContext,
+    public readonly end: BN.Endianness = 'le',
+  ) {}
 
   static shareLength = 64
 
@@ -43,8 +46,8 @@ export class SecretSharing {
     utils.concatBytes(index, t, n, id, share)
 
   private toBN = (n: ConstructorParameters<typeof BN>[0]) =>
-    new BN(n, 16, 'le').toRed(this.red)
-  private fromBN = (n: RedBN, l: number) => n.toArrayLike(Buffer, 'le', l)
+    new BN(n, 16, this.end).toRed(this.red)
+  private fromBN = (n: RedBN, l: number) => n.toArrayLike(Buffer, this.end, l)
 
   private validateShares = (shares: Uint8Array[]) => {
     shares.forEach((share) => {

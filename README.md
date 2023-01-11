@@ -32,9 +32,67 @@ Send & Confirm the transaction.
 
 These following formulas are the main cryptography foundation that Desig is based on.
 
-![cryptography foundation](https://i.imgur.com/KJiUJP7.png)
+## Elliptic Curve Digital Signature Algorithms
 
-_Fig. 1. Crytography Foundation: ECDSA Secp256k1, EdDSA (ECDSA Ed25519), Shamir's Secret Sharing._
+$$
+\begin{align*}
+  ECDSA \; (Secp256k1)&: s = r^{-1}(H(m)+R_xPriv) \\
+  EdDSA \; (Ed25519)&: s = r+H(R,Pub,m)Priv
+\end{align*}
+$$
+
+## ElGamal Publickey Encryption
+
+### Key Generation
+
+$$
+Pub=G*Priv
+$$
+
+### Encryption
+
+$$
+E(m)={c=m+r*Pub,s=r*G}
+$$
+
+### Decryption
+
+$$
+D(c,s,Priv)={m=c-s*Priv}
+$$
+
+## Shamir Secret Sharing
+
+Let $s$ be the secret in a $t-out-of-n$ Shamir Secret Sharning Scheme.
+
+$$
+\begin{align*}
+  r(x)_{r_i \leftarrow \$} &= s + r_1x + ... + r_{t-1}x^{t-1} \\
+  SHR(s) &= \{s_i\}_{1..n} \\
+  REC(s_{i \in \{i..n\}_t}) &= s
+\end{align*}
+$$
+
+Efficient reconstruction:
+
+$$
+Shamir \; Secret \; Sharing: f(0) = \sum_{i=1}^{t} y_i \prod_{j=1,j \neq i}^{t} \frac{x_j-x_i}{x_j}
+$$
+
+### Homomorphism in Shamir Secret Sharing
+
+Let's $a$ and $b$ be 2 secrets that are shared by these functions:
+
+$$
+\begin{align*}
+  g(x) &= a + g_1x + ... + g_{t-1}x^{t-1}
+  h(x) &= b + h_1x + ... + h_{t-1}x^{t-1}
+\end{align*}
+$$
+
+A operation $*$ is homomorphic when $c_i=a_i+b_i$ and
+
+### Multiplicative Homomorphism
 
 # Desig's Assumption
 

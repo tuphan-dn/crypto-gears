@@ -28,13 +28,13 @@ export class EdCurve {
   }
 
   static addPoint = (pointA: Uint8Array, pointB: Uint8Array): Uint8Array => {
-    const a = Point.fromHex(pointA.subarray(0, 32))
-    const b = Point.fromHex(pointB.subarray(0, 32))
+    const a = Point.fromHex(pointA)
+    const b = Point.fromHex(pointB)
     return a.add(b).toRawBytes()
   }
 
   static mulScalar = (point: Uint8Array, scalar: Uint8Array): Uint8Array => {
-    const p = Point.fromHex(point.subarray(0, 32))
+    const p = Point.fromHex(point)
     const s = BigInt(EdCurve.encode(scalar).toString())
     return p.multiply(s).toRawBytes()
   }
@@ -46,7 +46,7 @@ export class EdUtil {
 
   static shareRandomness = (t: number, n: number) => {
     const r = EdCurve.mod(utils.randomBytes(EdUtil.randomnessLength))
-    const secretSharing = new SecretSharing(EdCurve.red)
+    const secretSharing = new SecretSharing(EdCurve.red, 'le')
     const shares = secretSharing.share(r, t, n)
     const R = EdCurve.baseMul(r)
     return { shares, R }
@@ -88,9 +88,6 @@ export class EdTSS {
    * @returns
    */
   static addSig = (...sigs: Uint8Array[]): Uint8Array => {
-    for (const sig of sigs)
-      if (sig.length !== EdTSS.signatureLength)
-        throw new Error('Invalid signature length')
     const rs = sigs.map((sig) => sig.subarray(0, 32))
     const ss = sigs.map((sig) => sig.subarray(32))
     // Compute R
@@ -98,7 +95,7 @@ export class EdTSS {
       (sum, r) => EdCurve.addPoint(sum, r),
       Point.ZERO.toRawBytes(),
     )
-    // Compute s
+    // Compute S
     const S = EdCurve.decode(
       ss.reduce(
         (sum, s) => sum.redAdd(EdCurve.encode(s)),
@@ -113,10 +110,10 @@ export class EdTSS {
   /**
    * Partially signs the message by each holder
    * @param msg Message
-   * @param r Shared randomness
-   * @param derivedKey Derived key
    * @param R Randomness
    * @param publicKey Master public key
+   * @param r Shared randomness
+   * @param derivedKey Derived key
    * @returns
    */
   static sign = (

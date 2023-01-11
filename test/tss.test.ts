@@ -5,7 +5,7 @@ import { SecretSharing, EdTSS, EdCurve, EdUtil } from '../dist'
 import { msg, master, print } from './utils'
 
 describe('Threshold Signature Scheme', function () {
-  const secretSharing = new SecretSharing(EdCurve.red)
+  const secretSharing = new SecretSharing(EdCurve.red, 'le')
 
   before(() => {
     print('Master:', master.publicKey.toBase58())
@@ -17,8 +17,6 @@ describe('Threshold Signature Scheme', function () {
     const t = 2
     const n = 2
 
-    const indice = [1, 2].map((i) => new BN(i).toArrayLike(Buffer, 'le', 8))
-    const pi = secretSharing.pi(indice)
     const sharedKeys = secretSharing.share(derivedKey, t, n)
     const { shares, R } = EdUtil.shareRandomness(t, n)
 
@@ -35,6 +33,8 @@ describe('Threshold Signature Scheme', function () {
         ),
       )
     // Correct sig
+    const indice = [1, 2].map((i) => new BN(i).toArrayLike(Buffer, 'le', 8))
+    const pi = secretSharing.pi(indice)
     const correctSigs = sharedSigs.map((sharedSig, i) =>
       utils.concatBytes(
         EdCurve.mulScalar(sharedSig.subarray(0, 32), pi[i]),
@@ -53,8 +53,6 @@ describe('Threshold Signature Scheme', function () {
     const t = 2
     const n = 3
 
-    const indice = [1, 2].map((i) => new BN(i).toArrayLike(Buffer, 'le', 8))
-    const pi = secretSharing.pi(indice)
     const sharedKeys = secretSharing.share(derivedKey, t, n)
     const { shares, R } = EdUtil.shareRandomness(t, n)
 
@@ -71,6 +69,8 @@ describe('Threshold Signature Scheme', function () {
         ),
       )
     // Correct sig
+    const indice = [1, 2].map((i) => new BN(i).toArrayLike(Buffer, 'le', 8))
+    const pi = secretSharing.pi(indice)
     const correctSigs = sharedSigs.map((sharedSig, i) =>
       utils.concatBytes(
         EdCurve.mulScalar(sharedSig.subarray(0, 32), pi[i]),
