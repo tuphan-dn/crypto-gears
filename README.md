@@ -95,7 +95,7 @@ $$
 \end{align*}
 $$
 
-A operation $*$ is homomorphic when $c_i=a_i+b_i$ and
+A operation $*$ is homomorphic when $c_i=a_i*b_i$ and $REC(c_{i \in \{i..n\}_t}) = a*b$.
 
 ### Multiplicative Homomorphism
 
