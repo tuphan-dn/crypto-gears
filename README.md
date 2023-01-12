@@ -141,9 +141,90 @@ $$
 
 By $z(x)$, we can share the new ones as the folowing table:
 
-| $x$ | $0$  | $1$        | $...$ | $t-1$          | $t$        |
-| --- | ---- | ---------- | ----- | -------------- | ---------- |
-| $z$ | $ab$ | $\omega_1$ | $...$ | $\omega_{t-1}$ | $\omega_t$ |
+| $x$ | $0$  | $1$                                     | $...$ | $t-1$                                         | $t$                                     |
+| --- | ---- | --------------------------------------- | ----- | --------------------------------------------- | --------------------------------------- |
+| $z$ | $ab$ | $\omega_1 = \sum_i \gamma_i z^{(i)}(1)$ | $...$ | $\omega_{t-1} = \sum_i \gamma_i z^{(i)}(t-1)$ | $\omega_t = \sum_i \gamma_i z^{(i)}(t)$ |
+
+### Debug
+
+#### Interpolation
+
+$$
+\begin{align*}
+  f(x) &= f_0 + f_1x + ... + f_{t-1}x^{t-1}\\
+  f(t) &= f_0 + f_1t + ... + f_{t-1}t^{t-1}\\
+  f(t+1) &= f_0 + f_1(t+1) + ... + f_{t-1}(t+1)^{t-1}
+\end{align*}
+$$
+
+$$
+f(x) = \sum_{i=1}^{t} f(x_i) \prod_{j=1,j \neq i}^{t} \frac{x-x_j}{x_i-x_j}
+$$
+
+$$
+r_x f(x) = r_x \sum_{i=1}^{t} f(i) \prod_{j=1,j \neq i}^{t} \frac{x-j}{i-j}
+$$
+
+#### Strict Version
+
+| $x$    | $0$  | $1$      | $...$ | $t-1$            | $t$      | $t+1$        | $...$ | $2t-1$        |
+| ------ | ---- | -------- | ----- | ---------------- | -------- | ------------ | ----- | ------------- |
+| $g$    | $a$  | $a_1$    | $...$ | $a_{t-1}$        | $a_t$    | $a_{t+1}$    | $...$ | $a_{2t-1}$    |
+| $h$    | $b$  | $b_1$    | $...$ | $b_{t-1}$        | $b_t$    | $b_?$        | $...$ | $b_?$         |
+| $f=gh$ | $ab$ | $a_1b_1$ | $...$ | $a_{t-1}b_{t-1}$ | $a_tb_t$ | $a_{t+1}b_?$ | $...$ | $a_{2t-1}b_?$ |
+
+Examine the function $f(x) = g(x)h(x) = ab + ... + g_{t-1} h_{t-1} x^{2(t-1)}$:
+
+$$
+\begin{align*}
+  ab &= \sum_{i=1}^{2t-1} a_ib_i \prod_{j=1,j \neq i}^{2t-1} \frac{j}{j-i}\\
+  &= \sum_{i=1}^t a_ib_i \prod_{j=1,j \neq i}^{2t-1} \frac{j}{j-i} + \sum_{i=t+1}^{2t-1} a_ib_? \prod_{j=1,j \neq i}^{2t-1} \frac{j}{j-i}\\
+  &= \sum_{i=1}^t a_ib_i \prod_{j=1,j \neq i}^{2t-1} \frac{j}{j-i} + \sum_{i=t+1}^{2t-1} a_i ( \sum_{u=1}^t b_u \prod_{v=1,v \neq u}^t \frac{i-v}{u-v} ) \prod_{j=1,j \neq i}^{2t-1} \frac{j}{j-i}\\
+  &= \sum_{i=1}^t a_ib_i \prod_{j=1,j \neq i}^{2t-1} \frac{j}{j-i} + \sum_{i=t+1}^{2t-1} \sum_{u=1}^t a_i b_u \prod_{j=1,j \neq i}^{2t-1} \frac{j}{j-i} \prod_{v=1,v \neq u}^t \frac{i-v}{u-v}\\
+
+\end{align*}
+$$
+
+#### Loose Version
+
+| $x$    | $0$  | $1$      | $...$ | $2t$           |
+| ------ | ---- | -------- | ----- | -------------- |
+| $g$    | $a$  | $a_1$    | $...$ | $a_{2t}$       |
+| $h$    | $b$  | $b_1$    | $...$ | $b_{2t}$       |
+| $f=gh$ | $ab$ | $a_1b_1$ | $...$ | $a_{2t}b_{2t}$ |
+
+Examine the function $f(x) = g(x)h(x) = ab + ... + g_{t-1} h_{t-1} x^{2(t-1)}$:
+
+$$
+\begin{align*}
+  ab &= \sum_{i=1}^{2t} a_ib_i \prod_{j=1,j \neq i}^{2t} \frac{j}{j-i}\\
+  &= \sum_{i=1}^t a_ib_i \prod_{j=1,j \neq i}^{2t} \frac{j}{j-i} + \sum_{i=1}^t a_{t+i}b_{t+i} \prod_{j=1,j \neq t+i}^{2t} \frac{j}{j-t-i}\\
+\end{align*}
+$$
+
+And multi parties want to securely compute the term of $a_{t+i}b_{t+i}$
+
+Skip details,
+
+$$
+\begin{align*}
+  &\sum_{i=1}^t a_{t+i}b_{t+i} \prod_{j=1,j \neq t+i}^{2t} \frac{j}{j-t-i}\\
+  &= \sum_{i=1}^t a_{t+i} (\sum_{u=1}^t b_u \prod_{v=1,v \neq u}^t \frac{t+i-v}{u-v}) \prod_{j=1,j \neq t+i}^{2t} \frac{j}{j-t-i}\\
+  &= \sum_{i=1}^t \sum_{u=1}^t (a_{t+i} b_u \prod_{v=1,v \neq u}^t \frac{t+i-v}{u-v} \prod_{j=1,j \neq t+i}^{2t} \frac{j}{j-t-i})\\
+\end{align*}
+$$
+
+The term related to the server $u$ is,
+
+$$
+\begin{align*}
+  s_u &= b_u \sum_{i=1}^t (a_{t+i} \prod_{v=1,v \neq u}^t \frac{t+i-v}{u-v} \prod_{j=1,j \neq t+i}^{2t} \frac{j}{j-t-i})\\
+  &= b_u \sum_{i=1}^t (a_{t+i} \prod_{j=1,j \neq u}^t \frac{t+i-j}{u-j} \prod_{j=1}^t \frac{j}{j-t-i} \prod_{j=t+1,j \neq t+i}^{2t} \frac{j}{j-t-i})\\
+  &= b_u \sum_{i=1}^t (a_{t+i} \frac{u}{u-t-i} \prod_{j=1,j \neq u}^t \frac{t+i-j}{u-j} \prod_{j=1,j \neq u}^t \frac{j}{j-t-i} \prod_{j=t+1,j \neq t+i}^{2t} \frac{j}{j-t-i})\\
+  &= b_u \sum_{i=1}^t (a_{t+i} \frac{u}{u-t-i} \prod_{j=1,j \neq u}^t \frac{j}{j-u} \prod_{j=t+1,j \neq t+i}^{2t} \frac{j}{j-t-i})\\
+  &= b_u \sum_{i=1}^t (a_{t+i} \frac{u}{u-t-i} \prod_{j=1,j \neq u}^t \frac{j}{j-u} \prod_{j=1,j \neq i}^{t} \frac{t+j}{j-i})\\
+\end{align*}
+$$
 
 # Desig's Assumption
 
