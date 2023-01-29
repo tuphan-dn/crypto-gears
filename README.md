@@ -152,79 +152,65 @@ By $z(x)$, we can share the new ones as the folowing table:
 $$
 \begin{align*}
   f(x) &= f_0 + f_1x + ... + f_{t-1}x^{t-1}\\
-  f(t) &= f_0 + f_1t + ... + f_{t-1}t^{t-1}\\
-  f(t+1) &= f_0 + f_1(t+1) + ... + f_{t-1}(t+1)^{t-1}
+  &= \sum_{i=1}^{t} f(x_i) \prod_{j=1,j \neq i}^{t} \frac{x-x_j}{x_i-x_j}
 \end{align*}
 $$
-
-$$
-f(x) = \sum_{i=1}^{t} f(x_i) \prod_{j=1,j \neq i}^{t} \frac{x-x_j}{x_i-x_j}
-$$
-
-$$
-r_x f(x) = r_x \sum_{i=1}^{t} f(i) \prod_{j=1,j \neq i}^{t} \frac{x-j}{i-j}
-$$
-
-#### Strict Version
-
-| $x$    | $0$  | $1$      | $...$ | $t-1$            | $t$      | $t+1$        | $...$ | $2t-1$        |
-| ------ | ---- | -------- | ----- | ---------------- | -------- | ------------ | ----- | ------------- |
-| $g$    | $a$  | $a_1$    | $...$ | $a_{t-1}$        | $a_t$    | $a_{t+1}$    | $...$ | $a_{2t-1}$    |
-| $h$    | $b$  | $b_1$    | $...$ | $b_{t-1}$        | $b_t$    | $b_?$        | $...$ | $b_?$         |
-| $f=gh$ | $ab$ | $a_1b_1$ | $...$ | $a_{t-1}b_{t-1}$ | $a_tb_t$ | $a_{t+1}b_?$ | $...$ | $a_{2t-1}b_?$ |
-
-Examine the function $f(x) = g(x)h(x) = ab + ... + g_{t-1} h_{t-1} x^{2(t-1)}$:
 
 $$
 \begin{align*}
-  ab &= \sum_{i=1}^{2t-1} a_ib_i \prod_{j=1,j \neq i}^{2t-1} \frac{j}{j-i}\\
-  &= \sum_{i=1}^t a_ib_i \prod_{j=1,j \neq i}^{2t-1} \frac{j}{j-i} + \sum_{i=t+1}^{2t-1} a_ib_? \prod_{j=1,j \neq i}^{2t-1} \frac{j}{j-i}\\
-  &= \sum_{i=1}^t a_ib_i \prod_{j=1,j \neq i}^{2t-1} \frac{j}{j-i} + \sum_{i=t+1}^{2t-1} a_i ( \sum_{u=1}^t b_u \prod_{v=1,v \neq u}^t \frac{i-v}{u-v} ) \prod_{j=1,j \neq i}^{2t-1} \frac{j}{j-i}\\
-  &= \sum_{i=1}^t a_ib_i \prod_{j=1,j \neq i}^{2t-1} \frac{j}{j-i} + \sum_{i=t+1}^{2t-1} \sum_{u=1}^t a_i b_u \prod_{j=1,j \neq i}^{2t-1} \frac{j}{j-i} \prod_{v=1,v \neq u}^t \frac{i-v}{u-v}\\
-
+ \sum_i^L r_{n+i} h_{n+i} \prod_{j \neq n+i}^{L+R} \frac{-j}{n+i-j} &= \sum_i^L r_{n+i} (\sum_u^L h_u \prod_{j \neq u}^L \frac{n+i-j}{u-j}) \prod_{j \neq n+i}^{L+R} \frac{-j}{n+i-j}\\
+ &= \sum_i^L \sum_u^L r_{n+i} h_u \prod_{j \neq u}^L \frac{n+i-j}{u-j} \prod_{j \neq n+i}^{L+R} \frac{-j}{n+i-j}\\
 \end{align*}
 $$
 
-#### Loose Version
-
-| $x$    | $0$  | $1$      | $...$ | $2t$           |
-| ------ | ---- | -------- | ----- | -------------- |
-| $g$    | $a$  | $a_1$    | $...$ | $a_{2t}$       |
-| $h$    | $b$  | $b_1$    | $...$ | $b_{2t}$       |
-| $f=gh$ | $ab$ | $a_1b_1$ | $...$ | $a_{2t}b_{2t}$ |
-
-Examine the function $f(x) = g(x)h(x) = ab + ... + g_{t-1} h_{t-1} x^{2(t-1)}$:
+Furthermore,
 
 $$
 \begin{align*}
-  ab &= \sum_{i=1}^{2t} a_ib_i \prod_{j=1,j \neq i}^{2t} \frac{j}{j-i}\\
-  &= \sum_{i=1}^t a_ib_i \prod_{j=1,j \neq i}^{2t} \frac{j}{j-i} + \sum_{i=1}^t a_{t+i}b_{t+i} \prod_{j=1,j \neq t+i}^{2t} \frac{j}{j-t-i}\\
+  r = \sum_i^L r_i \prod_{j \neq i}^L \frac{-j}{i-j} = \sum_i^L r_{n+i} \prod_{j \neq i}^L \frac{-n-i}{i-j}
 \end{align*}
 $$
 
-And multi parties want to securely compute the term of $a_{t+i}b_{t+i}$
-
-Skip details,
+Skip irrelevant details to a specific server $\#u$:
 
 $$
 \begin{align*}
-  &\sum_{i=1}^t a_{t+i}b_{t+i} \prod_{j=1,j \neq t+i}^{2t} \frac{j}{j-t-i}\\
-  &= \sum_{i=1}^t a_{t+i} (\sum_{u=1}^t b_u \prod_{v=1,v \neq u}^t \frac{t+i-v}{u-v}) \prod_{j=1,j \neq t+i}^{2t} \frac{j}{j-t-i}\\
-  &= \sum_{i=1}^t \sum_{u=1}^t (a_{t+i} b_u \prod_{v=1,v \neq u}^t \frac{t+i-v}{u-v} \prod_{j=1,j \neq t+i}^{2t} \frac{j}{j-t-i})\\
+  s_u &= \sum_i^L r_{n+i} h_u \prod_{j \neq u}^L \frac{n+i-j}{u-j} \prod_{j \neq n+i}^{L+R} \frac{-j}{n+i-j}\\
+  &= \sum_i^L r_{n+i} h_u \prod_{j \neq u}^L \frac{n+i-j}{u-j} \prod_j^L \frac{-j}{n+i-j} \prod_{j \neq n+i}^R \frac{-j}{n+i-j}\\
+  &= \sum_i^L r_{n+i} h_u \prod_{j \neq u}^L \frac{n+i-j}{u-j} (\frac{-u}{n+i-u} \prod_{j \neq u}^L \frac{-j}{n+i-j}) \prod_{j \neq n+i}^R \frac{-j}{n+i-j}\\
+  &= \sum_i^L r_{n+i} h_u \frac{-u}{n+i-u} \prod_{j \neq u}^L \frac{-j}{u-j} \prod_{j \neq n+i}^R \frac{-j}{n+i-j}\\
+  &= \sum_i^L r_{n+i} h_u \frac{-u}{n+i-u} \prod_{j \neq u}^L \frac{-j}{u-j} \prod_{j \neq i}^L \frac{-n-j}{i-j}\\
+  &= h_u \prod_{j \neq u}^L \frac{j}{u-j} \sum_i^L \frac{u}{n+i-u} (r_{n+i} \prod_{j \neq i}^L \frac{-n-j}{i-j})\\
 \end{align*}
 $$
 
-The term related to the server $u$ is,
+Another approach (For brief, the $\Sigma$ notation will include the Langrage terms as well):
 
 $$
-\begin{align*}
-  s_u &= b_u \sum_{i=1}^t (a_{t+i} \prod_{v=1,v \neq u}^t \frac{t+i-v}{u-v} \prod_{j=1,j \neq t+i}^{2t} \frac{j}{j-t-i})\\
-  &= b_u \sum_{i=1}^t (a_{t+i} \prod_{j=1,j \neq u}^t \frac{t+i-j}{u-j} \prod_{j=1}^t \frac{j}{j-t-i} \prod_{j=t+1,j \neq t+i}^{2t} \frac{j}{j-t-i})\\
-  &= b_u \sum_{i=1}^t (a_{t+i} \frac{u}{u-t-i} \prod_{j=1,j \neq u}^t \frac{t+i-j}{u-j} \prod_{j=1,j \neq u}^t \frac{j}{j-t-i} \prod_{j=t+1,j \neq t+i}^{2t} \frac{j}{j-t-i})\\
-  &= b_u \sum_{i=1}^t (a_{t+i} \frac{u}{u-t-i} \prod_{j=1,j \neq u}^t \frac{j}{j-u} \prod_{j=t+1,j \neq t+i}^{2t} \frac{j}{j-t-i})\\
-  &= b_u \sum_{i=1}^t (a_{t+i} \frac{u}{u-t-i} \prod_{j=1,j \neq u}^t \frac{j}{j-u} \prod_{j=1,j \neq i}^{t} \frac{t+j}{j-i})\\
-\end{align*}
+rh = r \sum_i^L h_i
 $$
+
+Let $l_i$ be the random share of server $\#i$ in $n$ servers s.t. $\sum_i^L l_i = 0$. The we have:
+
+$$
+r h_i = r h_i + l_i
+$$
+
+#### Beaver's Multiplication
+
+To comupte the share $z_i$ of $rh$, we have 2 solutions of Beaver's multiplication.
+
+With $r_i$ in the multiplication triple:
+
+- A multiplication triple $(r_i, s_i, (rs)_i)$.
+- Open $e_i = h_i - s_i$ to construct $e$.
+- Compute $z_i = (rs)_i + er_i = (rs)_i + hr_i - sr_i$.
+
+With $h_i$ in the multiplication triple:
+
+- A multiplication triple $(s_i, h_i, (sh)_i)$.
+- Open $d_i = r_i - s_i$ to construct $d$.
+- Compute $z_i = (sh)_i + dh_i = (sh)_i + rh_i - sh_i$.
 
 # Desig's Assumption
 

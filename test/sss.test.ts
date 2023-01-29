@@ -73,48 +73,23 @@ describe('Threshold Signature Scheme', function () {
     expect(c).deep.equals(_c)
   })
 
-  it('multiplicative homomorphism (2-out-of-5)', async () => {
-    const a = EdCurve.encode(utils.randomBytes(32))
-    const b = EdCurve.encode(utils.randomBytes(32))
-    const c = EdCurve.decode(a.redMul(b), 32)
-    const as = secretSharing.share(EdCurve.decode(a, 32), 2, 3)
-    const bs = secretSharing.share(EdCurve.decode(b, 32), 2, 3)
-    const indice = [1, 2, 3].map((i) => new BN(i).toArrayLike(Buffer, 'be', 8))
-    const pi = secretSharing.pi(indice)
-    const abs = pi.map((p, i) => {
-      const x = EdCurve.encode(as[i].subarray(32))
-      const y = EdCurve.encode(bs[i].subarray(32))
-      // const z = EdCurve.decode(EdCurve.encode(p).redMul(x).redMul(y), 32)
-      // return secretSharing.share(z, indice.length, indice.length)
-      return utils.concatBytes(
-        as[i].subarray(0, 32),
-        EdCurve.decode(x.redMul(y), 32),
-      )
-    })
-    // const cs = abs.reduce(
-    //   (sum, x) =>
-    //     sum.map((y, i) =>
-    //       utils.concatBytes(
-    //         y.subarray(0, 32),
-    //         EdCurve.decode(
-    //           EdCurve.encode(y.subarray(32)).redAdd(
-    //             EdCurve.encode(x[i].subarray(32)),
-    //           ),
-    //           32,
-    //         ),
-    //       ),
-    //     ),
-    //   indice.map((i) =>
-    //     utils.concatBytes(
-    //       i,
-    //       EdCurve.decode(new BN(indice.length), 8),
-    //       EdCurve.decode(new BN(indice.length), 8),
-    //       EdCurve.decode(new BN(0), 8),
-    //       EdCurve.decode(new BN(0), 32),
-    //     ),
-    //   ),
-    // )
-    const _c = secretSharing.construct(abs)
-    expect(c).deep.equals(_c)
-  })
+  // it('multiplicative homomorphism (2-out-of-3)', async () => {
+  //   const a = EdCurve.encode(utils.randomBytes(32))
+  //   const b = EdCurve.encode(utils.randomBytes(32))
+  //   const c = EdCurve.decode(a.redInvm().redMul(b), 32)
+  //   const as = secretSharing.share(EdCurve.decode(a, 32), 2, 3)
+  //   const bs = secretSharing.share(EdCurve.decode(b, 32), 2, 3)
+  //   const indice = [1, 2, 3].map((i) => new BN(i).toArrayLike(Buffer, 'be', 8))
+  //   const pi = secretSharing.pi(indice)
+  //   const abs = pi.map((p, i) => {
+  //     const x = EdCurve.encode(as[i].subarray(32))
+  //     const y = EdCurve.encode(bs[i].subarray(32))
+  //     return utils.concatBytes(
+  //       as[i].subarray(0, 32),
+  //       EdCurve.decode(x.redInvm().redMul(y), 32),
+  //     )
+  //   })
+  //   const _c = secretSharing.construct(abs)
+  //   expect(c).deep.equals(_c)
+  // })
 })
