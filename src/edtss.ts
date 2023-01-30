@@ -2,14 +2,14 @@ import { CURVE, Point, sync, utils, sign } from '@noble/ed25519'
 import { sha512 } from '@noble/hashes/sha512'
 import BN from 'bn.js'
 import { SecretSharing } from './sss'
-import { CryptoScheme, RedBN } from './types'
+import { RedBN } from './ff'
+import { CryptoScheme } from './types'
 
 /**
  * EdCurve
  */
 export class EdCurve {
   static scheme: CryptoScheme = 'eddsa'
-
   static red = BN.red(new BN(CURVE.l.toString()))
 
   static encode = (r: Uint8Array): RedBN =>
@@ -18,7 +18,7 @@ export class EdCurve {
   static decode = (r: BN, length: number): Uint8Array =>
     r.toArrayLike(Buffer, 'le', length)
 
-  static mod = (r: Uint8Array): Uint8Array =>
+  static normalize = (r: Uint8Array): Uint8Array =>
     EdCurve.decode(EdCurve.encode(r), r.length)
 
   static baseMul = (r: Uint8Array): Uint8Array => {
@@ -45,7 +45,7 @@ export class EdUtil {
   static derivedKeyLength = 32
 
   static shareRandomness = (t: number, n: number) => {
-    const r = EdCurve.mod(utils.randomBytes(EdUtil.randomnessLength))
+    const r = EdCurve.normalize(utils.randomBytes(EdUtil.randomnessLength))
     const secretSharing = new SecretSharing(EdCurve.red, 'le')
     const shares = secretSharing.share(r, t, n)
     const R = EdCurve.baseMul(r)
@@ -60,7 +60,7 @@ export class EdUtil {
     derivedKey[0] &= 248
     derivedKey[31] &= 127
     derivedKey[31] |= 64
-    return EdCurve.mod(derivedKey)
+    return EdCurve.normalize(derivedKey)
   }
 
   static getPublicKey = (privateKey: Uint8Array) => {

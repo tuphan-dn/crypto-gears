@@ -16,7 +16,9 @@ export const print = (...args: any[]) => {
  * @param address Solana address
  * @returns true/false
  */
-export const isAddress = (address: string | undefined): address is string => {
+export const isSolanaAddress = (
+  address: string | undefined,
+): address is string => {
   if (!address) return false
   try {
     const publicKey = new PublicKey(address)
@@ -27,8 +29,8 @@ export const isAddress = (address: string | undefined): address is string => {
   }
 }
 
-export const explorer = (addressOrTxId: string, net: Cluster): string => {
-  if (isAddress(addressOrTxId)) {
+export const solscan = (addressOrTxId: string, net: Cluster): string => {
+  if (isSolanaAddress(addressOrTxId)) {
     return `https://solscan.io/account/${addressOrTxId}?cluster=${net}`
   }
   return `https://solscan.io/tx/${addressOrTxId}?cluster=${net}`

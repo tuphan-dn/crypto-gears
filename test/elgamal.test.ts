@@ -4,8 +4,8 @@ import { ECCurve, EdCurve, ElGamal } from '../dist'
 
 describe('ElGamal Encryption', function () {
   it('encrypt/decrypt on EdDSA', () => {
-    const m = EdCurve.mod(utils.randomBytes(32))
-    const privkey = EdCurve.mod(utils.randomBytes(32))
+    const m = EdCurve.normalize(utils.randomBytes(32))
+    const privkey = EdCurve.normalize(utils.randomBytes(32))
     const pubkey = EdCurve.baseMul(privkey)
     const elgamal = new ElGamal(EdCurve)
     const { c, R } = elgamal.encrypt(m, pubkey)

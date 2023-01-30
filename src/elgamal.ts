@@ -30,7 +30,7 @@ export class ElGamal {
       throw new Error('Invalid public key length')
     if (m.length !== ElGamal.plainTextLength)
       throw new Error('Invalid plain text length')
-    const r = this.curve.mod(utils.randomBytes(32))
+    const r = this.curve.normalize(utils.randomBytes(32))
     const R = this.curve.baseMul(r)
     const s = this.curve.mulScalar(pubkey, r)
     const c = this.xor(m, s)

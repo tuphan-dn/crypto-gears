@@ -10,7 +10,7 @@
 
 import { utils } from '@noble/ed25519'
 import BN from 'bn.js'
-import { RedBN } from './types'
+import { RedBN } from './ff'
 
 export type ExtractedShare = {
   index: Uint8Array // 8 bytes

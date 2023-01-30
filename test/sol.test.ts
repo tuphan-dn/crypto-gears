@@ -6,7 +6,7 @@ import {
   Transaction,
 } from '@solana/web3.js'
 import { SecretSharing, EdTSS, EdCurve, EdUtil } from '../dist'
-import { master, explorer, print } from './utils'
+import { master, solscan, print } from './utils'
 import { utils } from '@noble/ed25519'
 
 const cluster = 'https://devnet.genesysgo.net'
@@ -83,7 +83,7 @@ describe('Solana Interaction', function () {
     tx.addSignature(master.publicKey, Buffer.from(sig))
     // Send the tx
     const txId = await sendAndConfirm(tx)
-    print(explorer(txId, 'devnet'))
+    print(solscan(txId, 'devnet'))
   })
 
   it('2-out-of-3 send tx', async () => {
@@ -124,6 +124,6 @@ describe('Solana Interaction', function () {
     tx.addSignature(master.publicKey, Buffer.from(sig))
     // Send the tx
     const txId = await sendAndConfirm(tx)
-    print(explorer(txId, 'devnet'))
+    print(solscan(txId, 'devnet'))
   })
 })

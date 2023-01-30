@@ -9,7 +9,8 @@ import {
 } from '@noble/secp256k1'
 import BN from 'bn.js'
 import { SecretSharing } from './sss'
-import { CryptoScheme, RedBN } from './types'
+import { RedBN } from './ff'
+import { CryptoScheme } from './types'
 
 /**
  * ECCurve
@@ -25,7 +26,7 @@ export class ECCurve {
   static decode = (r: BN, length: number): Uint8Array =>
     r.toArrayLike(Buffer, 'be', length)
 
-  static mod = (r: Uint8Array): Uint8Array =>
+  static normalize = (r: Uint8Array): Uint8Array =>
     ECCurve.decode(ECCurve.encode(r), r.length)
 
   static baseMul = (r: Uint8Array): Uint8Array => {
@@ -51,7 +52,7 @@ export class ECUtil {
   static randomnessLength = 32
 
   static shareRandomness = (t: number, n: number) => {
-    const r = ECCurve.mod(utils.randomBytes(ECUtil.randomnessLength))
+    const r = ECCurve.normalize(utils.randomBytes(ECUtil.randomnessLength))
     const secretSharing = new SecretSharing(ECCurve.red, 'be')
     const shares = secretSharing.share(r, t, n)
     const R = ECCurve.baseMul(r)
