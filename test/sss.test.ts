@@ -6,7 +6,7 @@ import { utils } from '@noble/ed25519'
 import BN from 'bn.js'
 
 describe('Threshold Signature Scheme', function () {
-  const secretSharing = new SecretSharing(EdCurve.red, 'le')
+  const secretSharing = new SecretSharing(EdCurve.ff.r, 'le')
   const derivedKey = EdUtil.getDerivedKey(master.secretKey)
 
   before(() => {
@@ -56,17 +56,17 @@ describe('Threshold Signature Scheme', function () {
   })
 
   it('additive homomorphism (2-out-of-3)', async () => {
-    const a = EdCurve.encode(utils.randomBytes(32))
-    const b = EdCurve.encode(utils.randomBytes(32))
-    const c = EdCurve.decode(a.redAdd(b), 32)
-    const as = secretSharing.share(EdCurve.decode(a, 32), 2, 3)
-    const bs = secretSharing.share(EdCurve.decode(b, 32), 2, 3)
+    const a = EdCurve.ff.encode(utils.randomBytes(32))
+    const b = EdCurve.ff.encode(utils.randomBytes(32))
+    const c = EdCurve.ff.decode(a.redAdd(b), 32)
+    const as = secretSharing.share(EdCurve.ff.decode(a, 32), 2, 3)
+    const bs = secretSharing.share(EdCurve.ff.decode(b, 32), 2, 3)
     const cs = as
       .filter((_, i) => i !== 2)
       .map((_, i) => {
-        const x = EdCurve.encode(as[i].subarray(32))
-        const y = EdCurve.encode(bs[i].subarray(32))
-        const z = EdCurve.decode(x.redAdd(y), 32)
+        const x = EdCurve.ff.encode(as[i].subarray(32))
+        const y = EdCurve.ff.encode(bs[i].subarray(32))
+        const z = EdCurve.ff.decode(x.redAdd(y), 32)
         return utils.concatBytes(as[i].subarray(0, 32), z)
       })
     const _c = secretSharing.construct(cs)

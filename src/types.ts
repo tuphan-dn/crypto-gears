@@ -1,4 +1,3 @@
-import type BN from 'bn.js'
 import type { ECCurve } from './ectss'
 import type { EdCurve } from './edtss'
 

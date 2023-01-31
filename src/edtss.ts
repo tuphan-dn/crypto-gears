@@ -2,7 +2,7 @@ import { CURVE, Point, sync, utils, sign } from '@noble/ed25519'
 import { sha512 } from '@noble/hashes/sha512'
 import BN from 'bn.js'
 import { SecretSharing } from './sss'
-import { RedBN } from './ff'
+import { FiniteField } from './ff'
 import { CryptoScheme } from './types'
 
 /**
@@ -10,43 +10,37 @@ import { CryptoScheme } from './types'
  */
 export class EdCurve {
   static scheme: CryptoScheme = 'eddsa'
-  static red = BN.red(new BN(CURVE.l.toString()))
+  static ff = FiniteField.fromBigInt(CURVE.l, 'le')
 
-  static encode = (r: Uint8Array): RedBN =>
-    new BN(r, 16, 'le').toRed(EdCurve.red)
-
-  static decode = (r: BN, length: number): Uint8Array =>
-    r.toArrayLike(Buffer, 'le', length)
-
-  static normalize = (r: Uint8Array): Uint8Array =>
-    EdCurve.decode(EdCurve.encode(r), r.length)
-
-  static baseMul = (r: Uint8Array): Uint8Array => {
-    const bn = EdCurve.encode(r)
-    const bi = BigInt(bn.toString())
-    return Point.BASE.multiply(bi).toRawBytes()
+  static baseMul = (r: Uint8Array) => {
+    const b = BigInt(new BN(r, 16, 'le').toString())
+    return Point.BASE.multiply(b).toRawBytes()
   }
 
-  static addPoint = (pointA: Uint8Array, pointB: Uint8Array): Uint8Array => {
+  static addPoint = (pointA: Uint8Array, pointB: Uint8Array) => {
     const a = Point.fromHex(pointA)
     const b = Point.fromHex(pointB)
     return a.add(b).toRawBytes()
   }
 
-  static mulScalar = (point: Uint8Array, scalar: Uint8Array): Uint8Array => {
+  static mulScalar = (point: Uint8Array, scalar: Uint8Array) => {
     const p = Point.fromHex(point)
-    const s = BigInt(EdCurve.encode(scalar).toString())
+    const s = BigInt(new BN(scalar, 16, 'le').toString())
     return p.multiply(s).toRawBytes()
   }
 }
 
+/**
+ * EdUtil
+ */
 export class EdUtil {
   static randomnessLength = 32
   static derivedKeyLength = 32
+  static ff = FiniteField.fromBigInt(CURVE.l, 'le')
 
   static shareRandomness = (t: number, n: number) => {
-    const r = EdCurve.normalize(utils.randomBytes(EdUtil.randomnessLength))
-    const secretSharing = new SecretSharing(EdCurve.red, 'le')
+    const r = this.ff.norm(utils.randomBytes(EdUtil.randomnessLength))
+    const secretSharing = new SecretSharing(this.ff.r, 'le')
     const shares = secretSharing.share(r, t, n)
     const R = EdCurve.baseMul(r)
     return { shares, R }
@@ -60,25 +54,21 @@ export class EdUtil {
     derivedKey[0] &= 248
     derivedKey[31] &= 127
     derivedKey[31] |= 64
-    return EdCurve.normalize(derivedKey)
+    return this.ff.norm(derivedKey)
   }
 
-  static getPublicKey = (privateKey: Uint8Array) => {
-    return sync.getPublicKey(privateKey)
-  }
+  static getPublicKey = (privateKey: Uint8Array) =>
+    sync.getPublicKey(privateKey)
 
-  static sign = (
-    msg: Uint8Array,
-    privateKey: Uint8Array,
-  ): Promise<Uint8Array> => {
-    return sign(msg, privateKey)
-  }
+  static sign = (msg: Uint8Array, privateKey: Uint8Array) =>
+    sign(msg, privateKey)
 }
 
 /**
  * EdTSS
  */
 export class EdTSS {
+  static ff = FiniteField.fromBigInt(CURVE.l, 'le')
   static signatureLength = 64
   static publicKeyLength = 32
 
@@ -96,12 +86,9 @@ export class EdTSS {
       Point.ZERO.toRawBytes(),
     )
     // Compute S
-    const S = EdCurve.decode(
-      ss.reduce(
-        (sum, s) => sum.redAdd(EdCurve.encode(s)),
-        new BN(0).toRed(EdCurve.red),
-      ),
-      32,
+    const S = ss.reduce(
+      (sum, s) => this.ff.add(sum, s),
+      this.ff.decode(new BN(0)),
     )
     // Concat
     return utils.concatBytes(R, S)
@@ -143,10 +130,7 @@ export class EdTSS {
     for (let i = 0; i < 32; i++) sm[32 + i] = publicKey[i] // Assign A
     const h = sha512(sm)
     // s = r + H(R,A,M)a
-    const _r = EdCurve.encode(r)
-    const _h = EdCurve.encode(h)
-    const _a = EdCurve.encode(derivedKey)
-    const s = EdCurve.decode(_h.redMul(_a).redAdd(_r), 32)
+    const s = this.ff.add(this.ff.mul(h, derivedKey), r)
 
     // sm = [R,s,msg]
     for (let i = 0; i < 32; i++) sm[32 + i] = s[i]

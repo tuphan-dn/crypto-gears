@@ -4,24 +4,28 @@ import { utils } from '@noble/ed25519'
 export type RedBN = ReturnType<BN['toRed']>
 
 export class FiniteField {
-  private readonly r: ReductionContext
+  public readonly r: ReductionContext
 
-  constructor(public readonly red: BN) {
+  constructor(public readonly red: BN, public readonly en: BN.Endianness) {
     this.r = BN.red(this.red)
   }
 
   /**
    * Instantination Utility
    */
-  static fromString = (red: string) => new FiniteField(new BN(red))
-  static fromNumber = (red: number) => new FiniteField(new BN(red))
-  static fromBigInt = (red: BigInt) => FiniteField.fromString(red.toString())
+  static fromString = (red: string, en: BN.Endianness) =>
+    new FiniteField(new BN(red), en)
+  static fromNumber = (red: number, en: BN.Endianness) =>
+    new FiniteField(new BN(red), en)
+  static fromBigInt = (red: BigInt, en: BN.Endianness) =>
+    FiniteField.fromString(red.toString(), en)
 
   /**
    * Private encoder/decoder
    */
-  encode = (r: Uint8Array): RedBN => new BN(r, 16, 'le').toRed(this.r)
-  decode = (r: BN, len = 32): Uint8Array => r.toArrayLike(Buffer, 'le', len)
+  encode = (r: Uint8Array): RedBN => new BN(r, 16, this.en).toRed(this.r)
+  decode = (r: BN, len = 32): Uint8Array =>
+    Uint8Array.from(r.toArray(this.en, len))
 
   /**
    * Normalize or Modularize
@@ -46,6 +50,13 @@ export class FiniteField {
     this.decode(this.encode(a).redAdd(this.encode(b)))
 
   /**
+   * Negate a number
+   * @param a
+   * @returns
+   */
+  neg = (a: Uint8Array) => this.decode(this.encode(a).redNeg())
+
+  /**
    * Multiply 2 numbers
    * @param a
    * @param b
@@ -59,7 +70,7 @@ export class FiniteField {
    * @param a
    * @returns
    */
-  ivm = (a: Uint8Array) => this.decode(this.encode(a).redInvm())
+  inv = (a: Uint8Array) => this.decode(this.encode(a).redInvm())
 
   /**
    * Square a number
@@ -81,14 +92,14 @@ export class FiniteField {
    * @param b
    * @returns
    */
-  pow = (a: Uint8Array, b: Uint8Array) =>
-    this.decode(this.encode(a).redPow(this.encode(b)))
+  pow = (a: Uint8Array, b: number) =>
+    this.decode(this.encode(a).redPow(new BN(b)))
 
   /**
    * Compare 2 numbers
    * @param a
    * @param b
-   * @returns 0: a=b; 1: a>b; -1: a<b
+   * @returns 0: a=b | 1: a>b | -1: a<b
    */
   equal = (a: Uint8Array, b: Uint8Array) => Buffer.compare(a, b)
 }

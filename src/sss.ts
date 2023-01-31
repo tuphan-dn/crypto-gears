@@ -47,7 +47,8 @@ export class SecretSharing {
 
   private toBN = (n: ConstructorParameters<typeof BN>[0]) =>
     new BN(n, 16, this.end).toRed(this.red)
-  private fromBN = (n: RedBN, l: number) => n.toArrayLike(Buffer, this.end, l)
+  private fromBN = (n: RedBN, l: number): Uint8Array =>
+    Uint8Array.from(n.toArray(this.end, l))
 
   private validateShares = (shares: Uint8Array[]) => {
     shares.forEach((share) => {
