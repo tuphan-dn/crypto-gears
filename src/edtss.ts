@@ -77,7 +77,7 @@ export class EdTSS {
    * @param sigs Partial signatures
    * @returns
    */
-  static addSig = (...sigs: Uint8Array[]): Uint8Array => {
+  static addSig = (sigs: Uint8Array[]): Uint8Array => {
     const rs = sigs.map((sig) => sig.subarray(0, 32))
     const ss = sigs.map((sig) => sig.subarray(32))
     // Compute R

@@ -43,10 +43,11 @@ export class ECUtil {
 
   static shareRandomness = (t: number, n: number) => {
     const r = this.ff.norm(utils.randomBytes(ECUtil.randomnessLength))
+    const _r = this.ff.inv(r)
     const secretSharing = new SecretSharing(this.ff.r, 'be')
-    const shares = secretSharing.share(r, t, n)
-    const R = ECCurve.baseMul(r)
-    return { shares, R }
+    const shares = secretSharing.share(_r, t, n)
+    const R = ECTSS.ff.norm(ECCurve.baseMul(r).subarray(1))
+    return { shares, R, r: _r }
   }
 
   static getPublicKey = (privateKey: Uint8Array) =>
@@ -75,33 +76,35 @@ export class ECTSS {
    * @param sigs Partial signatures
    * @returns
    */
-  static addSig = (...sigs: Uint8Array[]): Uint8Array => {
-    const rs = sigs
-      .map(Signature.fromDER)
-      .map(({ r }) => new BN(r.toString()).toRed(this.ff.r))
-    const ss = sigs
-      .map(Signature.fromDER)
-      .map(({ s }) => new BN(s.toString()).toRed(this.ff.r))
-    // Compute R
-    const R = BigInt(
-      rs
-        .reduce((sum, r) => sum.redAdd(r), new BN(0).toRed(this.ff.r))
-        .toString(),
+  static addSig = (
+    sigs: Uint8Array[],
+    H: Uint8Array,
+    R: Uint8Array,
+    P2: Uint8Array,
+    Hr2: Uint8Array,
+  ): Uint8Array => {
+    const z = sigs.reduce(
+      (sum, correctSig) => ECUtil.ff.add(sum, correctSig),
+      ECUtil.ff.decode(new BN(0)),
     )
-    // Compute S
-    const S = BigInt(
-      ss
-        .reduce((sum, s) => sum.redAdd(s), new BN(0).toRed(this.ff.r))
-        .toString(),
+    const H2 = this.ff.pow(H, 2)
+    const R2 = this.ff.pow(R, 2)
+    const s = ECUtil.ff.mul(
+      ECUtil.ff.add(
+        ECUtil.ff.add(ECUtil.ff.pow(z, 2), H2),
+        ECUtil.ff.neg(ECUtil.ff.add(ECUtil.ff.mul(R2, P2), Hr2)),
+      ),
+      ECUtil.ff.inv(ECUtil.ff.decode(new BN(2))),
     )
-    // Concat
-    const sig = new Signature(R, S)
+    const sig = new Signature(
+      BigInt(ECUtil.ff.encode(R).toString()),
+      BigInt(ECUtil.ff.encode(s).toString()),
+    )
     return this.finalizeSig(sig)
   }
 
   /**
    * Partially signs the message by each holder
-   * @param msgHash Message
    * @param R Randomness
    * @param r Shared randomness
    * @param privateKey Private key
@@ -109,30 +112,17 @@ export class ECTSS {
    */
   static sign = (
     // Public
-    msgHash: Uint8Array,
     R: Uint8Array,
     // Private
     r: Uint8Array,
     privateKey: Uint8Array,
   ) => {
-    if (msgHash.length !== ECTSS.messageHashLength)
-      throw new Error('bad message hash size')
     if (r.length !== ECUtil.randomnessLength)
       throw new Error('bad randomness size')
     if (privateKey.length !== ECTSS.privateKeyLength)
       throw new Error('bad private key size')
 
-    const h = ECTSS.ff.norm(msgHash)
-    const s = this.ff.mul(
-      this.ff.inv(r),
-      this.ff.add(h, this.ff.mul(R, privateKey)),
-    )
-
-    const sig = new Signature(
-      BigInt(this.ff.encode(R).toString()),
-      BigInt(this.ff.encode(s).toString()),
-    )
-    return this.finalizeSig(sig)
+    return this.ff.add(r, this.ff.mul(R, privateKey))
   }
 
   /**

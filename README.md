@@ -81,7 +81,28 @@ $$
 Effective reconstruction:
 
 $$
-f(0) = \sum_{i=1}^{t} y_i \prod_{j=1,j \neq i}^{t} \frac{x_j-x_i}{x_j}
+f(0) = \sum_{i=1}^{t} y_i \prod_{j=1,j \neq i}^{t} \frac{x_j}{x_j-x_i}
+$$
+
+## Quad Protocol
+
+_**Quad Protocol**. Distribute shares $s_i$ of a secret $s$. Securely open $s^2$._
+
+$$
+\begin{align*}
+s^2 &= \sum_i^{(-t,t)} s_i^2 \prod_{j \neq i} \frac{j}{j-i}\\
+&= \sum_i^{(t)} s_i^2 \prod_{j \neq i} \frac{j}{j-i} + \sum_i^{(-t)} s_i^2 \prod_{j \neq i} \frac{j}{j-i}\\
+&= \sum_i^{(t)} s_i^2 \prod_{j \neq i} \frac{j}{j-i} + \sum_u^{(t)} s_{-u}^2 \prod_{j \neq u} \frac{j}{j-u}\\
+\end{align*}
+$$
+
+Let's examine the term of $\sum_u^{(t)} s_{-u}^2 \prod_{j \neq u} \frac{j}{j-u}$ (we will skip the notation of range $(t)$ for short):
+
+$$
+\begin{align*}
+&\sum_u s_{-u}^2 \prod_{j \neq u} \frac{j}{j-u}\\
+&= \sum_u \left( \sum_i s_i \prod_{j \neq i} \frac{j+u}{j-i} \right)^2 \prod_{j \neq u} \frac{j}{j-u}\\
+\end{align*}
 $$
 
 # Desig's Assumption
