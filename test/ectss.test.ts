@@ -19,8 +19,8 @@ describe('ECTSS', () => {
     const sharedKeys = secretSharing.share(master, t, n)
     // Round 1
     const hashMsg = await utils.sha256(msg)
-    const { shares, R, r } = ECUtil.shareRandomness(t, n)
-    const Hr2 = ECUtil.ff.pow(ECUtil.ff.add(hashMsg, ECUtil.ff.neg(r)), 2) // (H-r)^2
+    const { shares, R, z } = ECUtil.shareRandomness(t, n)
+    const Hz2 = ECUtil.ff.pow(ECUtil.ff.add(hashMsg, ECUtil.ff.neg(z)), 2) // (H-z)^2
     // Round 2
     const sharedSigs = sharedKeys
       .slice(0, t)
@@ -35,7 +35,7 @@ describe('ECTSS', () => {
       secretSharing.yl(sharedSig, pi[i]),
     )
     // Combine sigs
-    const sig = ECTSS.addSig(correctSigs, hashMsg, R, P2, Hr2)
+    const sig = ECTSS.addSig(correctSigs, hashMsg, R, P2, Hz2)
     const ok = ECTSS.verify(hashMsg, sig, publicKey)
     expect(ok).is.true
   })
@@ -50,8 +50,8 @@ describe('ECTSS', () => {
     const sharedKeys = secretSharing.share(master, t, n)
     // Round 1
     const hashMsg = await utils.sha256(msg)
-    const { shares, R, r } = ECUtil.shareRandomness(t, n)
-    const Hr2 = ECUtil.ff.pow(ECUtil.ff.add(hashMsg, ECUtil.ff.neg(r)), 2) // (H-r)^2
+    const { shares, R, z } = ECUtil.shareRandomness(t, n)
+    const Hz2 = ECUtil.ff.pow(ECUtil.ff.add(hashMsg, ECUtil.ff.neg(z)), 2) // (H-z)^2
     // Round 2
     const sharedSigs = sharedKeys
       .slice(0, t)
@@ -66,7 +66,7 @@ describe('ECTSS', () => {
       secretSharing.yl(sharedSig, pi[i]),
     )
     // Combine sigs
-    const sig = ECTSS.addSig(correctSigs, hashMsg, R, P2, Hr2)
+    const sig = ECTSS.addSig(correctSigs, hashMsg, R, P2, Hz2)
     const ok = ECTSS.verify(hashMsg, sig, publicKey)
     expect(ok).is.true
   })

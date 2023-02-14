@@ -43,11 +43,11 @@ export class ECUtil {
 
   static shareRandomness = (t: number, n: number) => {
     const r = this.ff.norm(utils.randomBytes(ECUtil.randomnessLength))
-    const _r = this.ff.inv(r)
+    const z = this.ff.inv(r)
     const secretSharing = new SecretSharing(this.ff.r, 'be')
-    const shares = secretSharing.share(_r, t, n)
+    const shares = secretSharing.share(z, t, n)
     const R = ECTSS.ff.norm(ECCurve.baseMul(r).subarray(1))
-    return { shares, R, r: _r }
+    return { shares, R, z }
   }
 
   static getPublicKey = (privateKey: Uint8Array) =>
@@ -81,7 +81,7 @@ export class ECTSS {
     H: Uint8Array,
     R: Uint8Array,
     P2: Uint8Array,
-    Hr2: Uint8Array,
+    Hz2: Uint8Array,
   ): Uint8Array => {
     const z = sigs.reduce(
       (sum, correctSig) => ECUtil.ff.add(sum, correctSig),
@@ -92,7 +92,7 @@ export class ECTSS {
     const s = ECUtil.ff.mul(
       ECUtil.ff.add(
         ECUtil.ff.add(ECUtil.ff.pow(z, 2), H2),
-        ECUtil.ff.neg(ECUtil.ff.add(ECUtil.ff.mul(R2, P2), Hr2)),
+        ECUtil.ff.neg(ECUtil.ff.add(ECUtil.ff.mul(R2, P2), Hz2)),
       ),
       ECUtil.ff.inv(ECUtil.ff.decode(new BN(2))),
     )
@@ -106,7 +106,7 @@ export class ECTSS {
   /**
    * Partially signs the message by each holder
    * @param R Randomness
-   * @param r Shared randomness
+   * @param z Shared inversed randomness
    * @param privateKey Private key
    * @returns
    */
@@ -114,15 +114,15 @@ export class ECTSS {
     // Public
     R: Uint8Array,
     // Private
-    r: Uint8Array,
+    z: Uint8Array,
     privateKey: Uint8Array,
   ) => {
-    if (r.length !== ECUtil.randomnessLength)
+    if (z.length !== ECUtil.randomnessLength)
       throw new Error('bad randomness size')
     if (privateKey.length !== ECTSS.privateKeyLength)
       throw new Error('bad private key size')
 
-    return this.ff.add(r, this.ff.mul(R, privateKey))
+    return this.ff.add(z, this.ff.mul(R, privateKey))
   }
 
   /**
