@@ -6,6 +6,12 @@ describe('Threshold Signature Scheme in LE', function () {
   const secretSharing = new SecretSharing(EdCurve.ff.r, 'le')
   const r = EdUtil.ff.norm(EdUtil.ff.rand())
 
+  it('1-out-of-1 share/reconstruct', async () => {
+    const shares = secretSharing.share(r, 1, 1)
+    const key = secretSharing.construct(shares)
+    expect(key).to.deep.equals(r)
+  })
+
   it('2-out-of-2 share/reconstruct', async () => {
     const shares = secretSharing.share(r, 2, 2)
     const key = secretSharing.construct(shares)
@@ -62,6 +68,12 @@ describe('Threshold Signature Scheme in LE', function () {
 describe('Threshold Signature Scheme in BE', function () {
   const secretSharing = new SecretSharing(ECCurve.ff.r, 'be')
   const r = ECUtil.ff.norm(ECUtil.ff.rand())
+
+  it('1-out-of-1 share/reconstruct', async () => {
+    const shares = secretSharing.share(r, 1, 1)
+    const key = secretSharing.construct(shares)
+    expect(key).to.deep.equals(r)
+  })
 
   it('2-out-of-2 share/reconstruct', async () => {
     const shares = secretSharing.share(r, 2, 2)

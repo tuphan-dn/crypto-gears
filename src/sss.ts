@@ -102,7 +102,7 @@ export class SecretSharing {
   }
 
   share = (key: Uint8Array, t: number, n: number): Uint8Array[] => {
-    if (t < 2 || n < 2 || t > n) throw new Error('Invalid t-out-of-n format')
+    if (t < 1 || n < 1 || t > n) throw new Error('Invalid t-out-of-n format')
     // Group identity
     const T = this.fromBN(this.toBN(t), 8)
     const N = this.fromBN(this.toBN(n), 8)
