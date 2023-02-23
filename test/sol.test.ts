@@ -1,6 +1,8 @@
 import BN from 'bn.js'
 import {
   Connection,
+  Keypair,
+  LAMPORTS_PER_SOL,
   PublicKey,
   SystemProgram,
   Transaction,
@@ -8,27 +10,33 @@ import {
 import { SecretSharing, EdTSS, EdCurve, EdUtil } from '../dist'
 import { master, solscan, print } from './utils'
 import { utils } from '@noble/ed25519'
+import { decode } from 'bs58'
 
-const cluster = 'https://devnet.genesysgo.net'
+const cluster = 'https://api.devnet.solana.com'
 const connection = new Connection(cluster, 'confirmed')
+const privkey =
+  'hzSokitqZRX7GkLdWT2LuACtU3rB6EkWrs338zcG7KuT5eDNKsNECEnbzWzRAoJBYLTBgVqbZBpvPdxcPJqns5U'
 
 const transfer = async (payer: PublicKey) => {
-  const tx = new Transaction()
+  // Build ix
   const ix = SystemProgram.transfer({
     fromPubkey: payer,
     toPubkey: new PublicKey('8W6QginLcAydYyMYjxuyKQN56NzeakDE3aRFrAmocS6D'),
     lamports: 1000,
   })
+  // Build tx
+  const tx = new Transaction()
   tx.add(ix)
   tx.feePayer = payer
   tx.recentBlockhash = (
     await connection.getLatestBlockhash('confirmed')
   ).blockhash
+  // Return tx
   return tx
 }
 
-const sendAndConfirm = async (tx: Transaction) => {
-  const signature = await connection.sendRawTransaction(tx.serialize(), {
+const sendAndConfirm = async (signedTx: Transaction) => {
+  const signature = await connection.sendRawTransaction(signedTx.serialize(), {
     skipPreflight: true,
     preflightCommitment: 'confirmed',
   })
@@ -44,6 +52,22 @@ const sendAndConfirm = async (tx: Transaction) => {
 
 describe('Solana Interaction', function () {
   const secretSharing = new SecretSharing(EdCurve.ff.r, 'le')
+  const account = Keypair.fromSecretKey(decode(privkey))
+
+  it('get balance', async () => {
+    const lamports = await connection.getBalance(account.publicKey)
+    const sol = lamports / LAMPORTS_PER_SOL
+    print('My balance:', sol, 'sol')
+  })
+
+  it('standalone transaction: standard sign', async () => {
+    const tx = await transfer(account.publicKey)
+    tx.sign(account)
+    const txId = await sendAndConfirm(tx)
+    print(solscan(txId))
+  })
+
+  it('standalone transaction: manual sign', async () => {})
 
   it('2-out-of-2 send tx', async () => {
     const t = 2
@@ -83,7 +107,7 @@ describe('Solana Interaction', function () {
     tx.addSignature(master.publicKey, Buffer.from(sig))
     // Send the tx
     const txId = await sendAndConfirm(tx)
-    print(solscan(txId, 'devnet'))
+    print(solscan(txId))
   })
 
   it('2-out-of-3 send tx', async () => {
@@ -124,6 +148,6 @@ describe('Solana Interaction', function () {
     tx.addSignature(master.publicKey, Buffer.from(sig))
     // Send the tx
     const txId = await sendAndConfirm(tx)
-    print(solscan(txId, 'devnet'))
+    print(solscan(txId))
   })
 })
