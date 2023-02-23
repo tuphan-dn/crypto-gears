@@ -1,5 +1,6 @@
 import { sha512 } from '@noble/hashes/sha512'
 import { Cluster, Keypair, PublicKey } from '@solana/web3.js'
+import Web3 from 'web3'
 
 export const msg = Buffer.from('this is a message', 'utf8')
 export const master = Keypair.fromSeed(
@@ -9,6 +10,24 @@ export const print = (...args: any[]) => {
   console.group()
   console.log('\x1b[36m↳\x1b[0m', ...args, '')
   console.groupEnd()
+}
+
+/**
+ * Validate Ethereum address
+ * @param address Ethereum address
+ * @returns true/false
+ */
+export const isEthereumAddress = (
+  address: string | undefined,
+): address is string => {
+  if (!address) return false
+  return Web3.utils.isAddress(address)
+}
+
+export const etherscan = (addrOrTx: string, net: string = 'goerli'): string => {
+  const subnet = net === 'mainnet' ? '' : `${net}.`
+  const pathname = isEthereumAddress(addrOrTx) ? 'address' : 'tx'
+  return `https://${subnet}etherscan.io/${pathname}/${addrOrTx}`
 }
 
 /**
@@ -29,9 +48,7 @@ export const isSolanaAddress = (
   }
 }
 
-export const solscan = (addressOrTxId: string, net: Cluster): string => {
-  if (isSolanaAddress(addressOrTxId)) {
-    return `https://solscan.io/account/${addressOrTxId}?cluster=${net}`
-  }
-  return `https://solscan.io/tx/${addressOrTxId}?cluster=${net}`
+export const solscan = (addrOrTx: string, net: Cluster = 'devnet'): string => {
+  const pathname = isSolanaAddress(addrOrTx) ? 'account' : 'tx'
+  return `https://solscan.io/${pathname}/${addrOrTx}?cluster=${net}`
 }
