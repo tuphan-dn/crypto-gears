@@ -1,6 +1,6 @@
 {
   "name": "@desig/core",
-  "version": "0.0.27",
+  "version": "0.0.28",
   "description": "The Decentralized Signature",
   "homepage": "https://core.desig.io/",
   "keywords": [
@@ -30,7 +30,7 @@
     "predeploy": "typedoc --excludePrivate --excludeProtected ./src/index.ts",
     "deploy": "gh-pages -d docs",
     "pretest": "yarn build",
-    "test": "mocha --require ts-node/register -t 120000 test/**/eth.test.ts",
+    "test": "mocha --require ts-node/register -t 120000 test/**/*.test.ts",
     "clean": "rimraf dist"
   },
   "dependencies": {
@@ -42,7 +42,7 @@
   },
   "devDependencies": {
     "@ethereumjs/common": "^3.0.2",
-    "@ethereumjs/tx": "^4.0.2",
+    "@ethereumjs/tx": "~4.0.2",
     "@solana/web3.js": "^1.73.0",
     "@types/bn.js": "^5.1.1",
     "@types/buffer-xor": "^2.0.0",
