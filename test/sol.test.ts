@@ -7,7 +7,7 @@ import {
   SystemProgram,
   Transaction,
 } from '@solana/web3.js'
-import { SecretSharing, EdTSS, EdCurve, EdUtil, ECTSS } from '../dist'
+import { SecretSharing, EdTSS, EdCurve, EdUtil } from '../dist'
 import { solscan, print, privsol } from './utils'
 import { utils } from '@noble/ed25519'
 import { decode } from 'bs58'
@@ -49,7 +49,7 @@ const sendAndConfirm = async (signedTx: Transaction) => {
 }
 
 describe('Solana Interaction', function () {
-  const secretSharing = new SecretSharing(ECTSS.ff.r, 'le')
+  const secretSharing = new SecretSharing(EdTSS.ff.r, 'le')
   const master = Keypair.fromSecretKey(decode(privsol))
 
   before(async () => {

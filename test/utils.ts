@@ -13,6 +13,15 @@ export const privsol =
   '24jJXyLBuCQwj8MWK8hJgjEP9Vr7fQzZGHKTxem1twZQk1oPZ3Bt7rB14RxQbRBLfFsbWjeEvDoaKbabAwJDPfyn'
 
 /**
+ * Delay by async/await
+ * @param ms - milisenconds
+ * @returns
+ */
+export const asyncWait = (ms: number): Promise<void> => {
+  return new Promise((resolve) => setTimeout(resolve, ms))
+}
+
+/**
  * Validate Ethereum address
  * @param address Ethereum address
  * @returns true/false

@@ -9,7 +9,7 @@ import { sign } from '@noble/secp256k1'
 import BN from 'bn.js'
 import Web3 from 'web3'
 import { ECTSS, ECUtil, SecretSharing } from '../dist'
-import { etherscan, print, priveth } from './utils'
+import { asyncWait, etherscan, print, priveth } from './utils'
 
 const cluster = 'https://goerli.infura.io/v3/783c24a3a364474a8dbed638263dc410'
 const web3 = new Web3(cluster)
@@ -47,6 +47,12 @@ const sendAndConfirm = async (signedTx: Transaction) => {
   const { transactionHash: txId } = await web3.eth.sendSignedTransaction(
     web3.utils.bytesToHex([...serializedTx]),
   )
+  while (true) {
+    const { blockNumber } = await web3.eth.getTransactionReceipt(txId)
+    const currentBlockNumber = await web3.eth.getBlockNumber()
+    if (currentBlockNumber - blockNumber >= 2) break
+    else await asyncWait(5000)
+  }
   return txId
 }
 
