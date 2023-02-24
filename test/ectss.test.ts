@@ -2,12 +2,11 @@ import { getPublicKey, utils } from '@noble/secp256k1'
 import BN from 'bn.js'
 import { expect } from 'chai'
 import { ECTSS, ECUtil, SecretSharing } from '../dist'
-
-const master = utils.randomPrivateKey()
-const msg = Buffer.from('this is a message', 'utf8')
+import { msg } from './utils'
 
 describe('ECTSS', () => {
   const secretSharing = new SecretSharing(ECTSS.ff.r, 'be')
+  const master = utils.randomPrivateKey()
 
   it('2-out-of-2 sign/verify', async () => {
     // Setup
@@ -35,7 +34,7 @@ describe('ECTSS', () => {
       secretSharing.yl(sharedSig, pi[i]),
     )
     // Combine sigs
-    const sig = ECTSS.addSig(correctSigs, hashMsg, R, P2, Hz2)
+    const [sig] = ECTSS.addSig(correctSigs, hashMsg, R, P2, Hz2)
     const ok = ECTSS.verify(hashMsg, sig, publicKey)
     expect(ok).is.true
   })
@@ -66,7 +65,7 @@ describe('ECTSS', () => {
       secretSharing.yl(sharedSig, pi[i]),
     )
     // Combine sigs
-    const sig = ECTSS.addSig(correctSigs, hashMsg, R, P2, Hz2)
+    const [sig] = ECTSS.addSig(correctSigs, hashMsg, R, P2, Hz2)
     const ok = ECTSS.verify(hashMsg, sig, publicKey)
     expect(ok).is.true
   })

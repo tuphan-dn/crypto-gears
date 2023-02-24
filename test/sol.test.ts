@@ -7,15 +7,13 @@ import {
   SystemProgram,
   Transaction,
 } from '@solana/web3.js'
-import { SecretSharing, EdTSS, EdCurve, EdUtil } from '../dist'
-import { master, solscan, print } from './utils'
+import { SecretSharing, EdTSS, EdCurve, EdUtil, ECTSS } from '../dist'
+import { solscan, print, privsol } from './utils'
 import { utils } from '@noble/ed25519'
 import { decode } from 'bs58'
 
 const cluster = 'https://api.devnet.solana.com'
 const connection = new Connection(cluster, 'confirmed')
-const privkey =
-  'hzSokitqZRX7GkLdWT2LuACtU3rB6EkWrs338zcG7KuT5eDNKsNECEnbzWzRAoJBYLTBgVqbZBpvPdxcPJqns5U'
 
 const transfer = async (payer: PublicKey) => {
   // Build ix
@@ -51,18 +49,19 @@ const sendAndConfirm = async (signedTx: Transaction) => {
 }
 
 describe('Solana Interaction', function () {
-  const secretSharing = new SecretSharing(EdCurve.ff.r, 'le')
-  const account = Keypair.fromSecretKey(decode(privkey))
+  const secretSharing = new SecretSharing(ECTSS.ff.r, 'le')
+  const master = Keypair.fromSecretKey(decode(privsol))
 
-  it('get balance', async () => {
-    const lamports = await connection.getBalance(account.publicKey)
+  before(async () => {
+    const lamports = await connection.getBalance(master.publicKey)
     const sol = lamports / LAMPORTS_PER_SOL
+    print('Master:', master.publicKey.toBase58())
     print('My balance:', sol, 'sol')
   })
 
   it('standalone transaction: standard sign', async () => {
-    const tx = await transfer(account.publicKey)
-    tx.sign(account)
+    const tx = await transfer(master.publicKey)
+    tx.sign(master)
     const txId = await sendAndConfirm(tx)
     print(solscan(txId))
   })
@@ -75,7 +74,6 @@ describe('Solana Interaction', function () {
     // Setup
     const derivedKey = EdUtil.getDerivedKey(master.secretKey)
     const sharedKeys = secretSharing.share(derivedKey, t, n)
-    print('Master:', master.publicKey.toBase58())
     // Build the tx
     const tx = await transfer(master.publicKey)
     // Serialize the tx
@@ -116,7 +114,6 @@ describe('Solana Interaction', function () {
     // Setup
     const derivedKey = EdUtil.getDerivedKey(master.secretKey)
     const sharedKeys = secretSharing.share(derivedKey, t, n)
-    print('Master:', master.publicKey.toBase58())
     // Build the tx
     const tx = await transfer(master.publicKey)
     // Serialize the tx

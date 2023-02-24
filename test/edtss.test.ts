@@ -1,15 +1,13 @@
 import { utils } from '@noble/ed25519'
+import { Keypair } from '@solana/web3.js'
 import BN from 'bn.js'
 import { expect } from 'chai'
 import { SecretSharing, EdTSS, EdCurve, EdUtil } from '../dist'
-import { msg, master, print } from './utils'
+import { msg } from './utils'
 
 describe('EdTSS', function () {
-  const secretSharing = new SecretSharing(EdCurve.ff.r, 'le')
-
-  before(() => {
-    print('Master:', master.publicKey.toBase58())
-  })
+  const secretSharing = new SecretSharing(EdTSS.ff.r, 'le')
+  const master = new Keypair()
 
   it('2-out-of-2 sign/verify', async () => {
     // Setup

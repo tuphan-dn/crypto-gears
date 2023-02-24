@@ -68,7 +68,17 @@ export class ECTSS {
 
   static finalizeSig = (sig: Signature): Uint8Array => {
     if (sig.hasHighS()) sig = sig.normalizeS()
-    return sig.toDERRawBytes()
+    return sig.toCompactRawBytes()
+  }
+
+  static recoveryBit = (R: Uint8Array, sig: Signature) => {
+    const q = Point.fromHex(R)
+    let recovery = (q.x === sig.r ? 0 : 2) | Number(q.y & BigInt(1))
+    if (sig.hasHighS()) {
+      sig = sig.normalizeS()
+      recovery ^= 1
+    }
+    return recovery
   }
 
   /**
@@ -82,7 +92,7 @@ export class ECTSS {
     R: Uint8Array,
     P2: Uint8Array,
     Hz2: Uint8Array,
-  ): Uint8Array => {
+  ): [Uint8Array, number] => {
     const z = sigs.reduce(
       (sum, correctSig) => ECUtil.ff.add(sum, correctSig),
       ECUtil.ff.decode(new BN(0)),
@@ -100,7 +110,8 @@ export class ECTSS {
       BigInt(ECUtil.ff.encode(R).toString()),
       BigInt(ECUtil.ff.encode(s).toString()),
     )
-    return this.finalizeSig(sig)
+    const recovery = this.recoveryBit(R, sig)
+    return [this.finalizeSig(sig), recovery]
   }
 
   /**

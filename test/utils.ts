@@ -1,16 +1,16 @@
-import { sha512 } from '@noble/hashes/sha512'
-import { Cluster, Keypair, PublicKey } from '@solana/web3.js'
+import { Cluster, PublicKey } from '@solana/web3.js'
 import Web3 from 'web3'
 
 export const msg = Buffer.from('this is a message', 'utf8')
-export const master = Keypair.fromSeed(
-  sha512(Buffer.from('master', 'utf8')).subarray(0, 32),
-)
 export const print = (...args: any[]) => {
   console.group()
   console.log('\x1b[36m↳\x1b[0m', ...args, '')
   console.groupEnd()
 }
+export const priveth =
+  '0x6f79f19cfc4df2ff8114f9c2029f9e813af7f1273661e87256fe02775ae78c25'
+export const privsol =
+  '24jJXyLBuCQwj8MWK8hJgjEP9Vr7fQzZGHKTxem1twZQk1oPZ3Bt7rB14RxQbRBLfFsbWjeEvDoaKbabAwJDPfyn'
 
 /**
  * Validate Ethereum address
