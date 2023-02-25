@@ -101,7 +101,7 @@ describe('Solana Interaction', function () {
       ),
     )
     // Add signatures
-    const [sig] = EdTSS.addSig(correctSigs)
+    const sig = EdTSS.addSig(correctSigs)
     tx.addSignature(master.publicKey, Buffer.from(sig))
     // Send the tx
     const txId = await sendAndConfirm(tx)
@@ -141,7 +141,7 @@ describe('Solana Interaction', function () {
       ),
     )
     // Add signatures
-    const [sig] = EdTSS.addSig(correctSigs)
+    const sig = EdTSS.addSig(correctSigs)
     tx.addSignature(master.publicKey, Buffer.from(sig))
     // Send the tx
     const txId = await sendAndConfirm(tx)

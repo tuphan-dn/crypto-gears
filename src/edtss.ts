@@ -77,7 +77,7 @@ export class EdTSS {
    * @param sigs Partial signatures
    * @returns
    */
-  static addSig = (sigs: Uint8Array[]): [Uint8Array, number] => {
+  static addSig = (sigs: Uint8Array[]): Uint8Array => {
     const rs = sigs.map((sig) => sig.subarray(0, 32))
     const ss = sigs.map((sig) => sig.subarray(32))
     // Compute R
@@ -91,7 +91,7 @@ export class EdTSS {
       this.ff.decode(new BN(0)),
     )
     // Concat
-    return [utils.concatBytes(R, S), -1] // The zero is for the shared api
+    return utils.concatBytes(R, S)
   }
 
   /**
