@@ -1,8 +1,3 @@
-/**
- * Credit to @raineorshine
- * https://gist.github.com/raineorshine/c8b30db96d7532e15f85fcfe72ac719c
- */
-
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { Transaction } from '@ethereumjs/tx'
 import { sign } from '@noble/secp256k1'
@@ -17,7 +12,7 @@ const web3 = new Web3(cluster)
 const transfer = async (payer: string) => {
   // Fixed params
   const params = {
-    to: '0x76d8B624eFDDd1e9fC4297F82a2689315ac62d82',
+    to: '0x69b84C6cE3a1b130e46a2982B92DA9A04de92aFE',
     value: web3.utils.toHex('1000000000'),
   }
   // Dynamic params
@@ -139,6 +134,7 @@ describe('Ethereum Integration', function () {
       s: BigInt(web3.utils.bytesToHex([...s])),
       v,
     })
+    // Send the tx
     const txId = await sendAndConfirm(signedTx)
     print(etherscan(txId))
   })
@@ -181,6 +177,7 @@ describe('Ethereum Integration', function () {
       s: BigInt(web3.utils.bytesToHex([...s])),
       v,
     })
+    // Send the tx
     const txId = await sendAndConfirm(signedTx)
     print(etherscan(txId))
   })

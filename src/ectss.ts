@@ -46,7 +46,7 @@ export class ECUtil {
     const z = this.ff.inv(r)
     const secretSharing = new SecretSharing(this.ff.r, 'be')
     const shares = secretSharing.share(z, t, n)
-    const R = ECTSS.ff.norm(ECCurve.baseMul(r).subarray(1))
+    const R = ECCurve.baseMul(r)
     return { shares, R, z }
   }
 
@@ -93,21 +93,22 @@ export class ECTSS {
     P2: Uint8Array,
     Hz2: Uint8Array,
   ): [Uint8Array, number] => {
-    const z = sigs.reduce(
+    const Rx = ECTSS.ff.norm(R.subarray(1))
+    const y = sigs.reduce(
       (sum, correctSig) => ECUtil.ff.add(sum, correctSig),
       ECUtil.ff.decode(new BN(0)),
     )
     const H2 = this.ff.pow(H, 2)
-    const R2 = this.ff.pow(R, 2)
+    const R2 = this.ff.pow(Rx, 2)
     const s = ECUtil.ff.mul(
       ECUtil.ff.add(
-        ECUtil.ff.add(ECUtil.ff.pow(z, 2), H2),
+        ECUtil.ff.add(ECUtil.ff.pow(y, 2), H2),
         ECUtil.ff.neg(ECUtil.ff.add(ECUtil.ff.mul(R2, P2), Hz2)),
       ),
       ECUtil.ff.inv(ECUtil.ff.decode(new BN(2))),
     )
     const sig = new Signature(
-      BigInt(ECUtil.ff.encode(R).toString()),
+      BigInt(ECUtil.ff.encode(Rx).toString()),
       BigInt(ECUtil.ff.encode(s).toString()),
     )
     const recovery = this.recoveryBit(R, sig)
@@ -133,7 +134,8 @@ export class ECTSS {
     if (privateKey.length !== ECTSS.privateKeyLength)
       throw new Error('bad private key size')
 
-    return this.ff.add(z, this.ff.mul(R, privateKey))
+    const Rx = ECTSS.ff.norm(R.subarray(1))
+    return this.ff.add(z, this.ff.mul(Rx, privateKey))
   }
 
   /**

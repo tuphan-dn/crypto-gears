@@ -15,7 +15,7 @@ export const privsol =
 /**
  * Delay by async/await
  * @param ms - milisenconds
- * @returns
+ * @returns Void
  */
 export const asyncWait = (ms: number): Promise<void> => {
   return new Promise((resolve) => setTimeout(resolve, ms))
