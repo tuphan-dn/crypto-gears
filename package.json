@@ -1,6 +1,6 @@
 {
   "name": "@desig/core",
-  "version": "0.0.31",
+  "version": "0.0.32",
   "description": "The Decentralized Signature",
   "homepage": "https://core.desig.io/",
   "keywords": [
@@ -37,8 +37,7 @@
     "@noble/ed25519": "^1.7.1",
     "@noble/hashes": "^1.1.5",
     "@noble/secp256k1": "^1.7.0",
-    "bn.js": "^5.2.1",
-    "bs58": "^5.0.0"
+    "bn.js": "^5.2.1"
   },
   "devDependencies": {
     "@ethereumjs/common": "^3.0.2",
@@ -49,6 +48,7 @@
     "@types/chai": "^4.3.3",
     "@types/mocha": "^9.1.1",
     "@types/node": "^18.7.18",
+    "bs58": "^5.0.0",
     "chai": "^4.3.6",
     "gh-pages": "^4.0.0",
     "mocha": "^10.0.0",

@@ -3,13 +3,11 @@ import { sha512 } from '@noble/hashes/sha512'
 import BN from 'bn.js'
 import { SecretSharing } from './sss'
 import { FiniteField } from './ff'
-import { CryptoScheme } from './types'
 
 /**
  * EdCurve
  */
 export class EdCurve {
-  static scheme: CryptoScheme = 'eddsa'
   static ff = FiniteField.fromBigInt(CURVE.l, 'le')
 
   static baseMul = (r: Uint8Array) => {

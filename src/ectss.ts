@@ -10,13 +10,11 @@ import {
 import BN from 'bn.js'
 import { SecretSharing } from './sss'
 import { FiniteField } from './ff'
-import { CryptoScheme } from './types'
 
 /**
  * ECCurve
  */
 export class ECCurve {
-  static scheme: CryptoScheme = 'ecdsa'
   static ff = FiniteField.fromBigInt(CURVE.P, 'be')
 
   static baseMul = (r: Uint8Array): Uint8Array => {

@@ -1,5 +1,6 @@
 import { utils } from '@noble/ed25519'
-import { Curve } from './types'
+import { ECCurve } from './ectss'
+import { EdCurve } from './edtss'
 
 export type CipherText = {
   c: Uint8Array
@@ -7,7 +8,7 @@ export type CipherText = {
 }
 
 export class ElGamal {
-  constructor(private readonly curve: Curve) {}
+  constructor(private readonly curve: typeof EdCurve | typeof ECCurve) {}
 
   static publicKeyLength = 32
   static privateKeyLength = 32
