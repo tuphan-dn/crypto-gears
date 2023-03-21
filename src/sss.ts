@@ -35,6 +35,11 @@ export class SecretSharing {
 
   static shareLength = 64
 
+  /**
+   * Convert a share from bytes-like array to human-readable object
+   * @param share Bytes-like array
+   * @returns Human-readable object
+   */
   static extract = (share: Uint8Array): ExtractedShare => ({
     index: share.subarray(0, 8),
     t: share.subarray(8, 16),
@@ -42,6 +47,12 @@ export class SecretSharing {
     id: share.subarray(24, 32),
     share: share.subarray(32, 64),
   })
+
+  /**
+   * Convet a share from human-readable object to bytes-like array
+   * @param opts ExtractedShare
+   * @returns Bytes-like array
+   */
   static compress = ({ index, t, n, id, share }: ExtractedShare) =>
     utils.concatBytes(index, t, n, id, share)
 
@@ -67,13 +78,19 @@ export class SecretSharing {
     return { indice, t, n: ns[0], id: ids[0] }
   }
 
-  pi = (indice: Uint8Array[]): Uint8Array[] => {
+  pi = (
+    indice: Uint8Array[],
+    index: Uint8Array = this.fromBN(this.toBN(0), 8),
+  ): Uint8Array[] => {
+    const a = this.toBN(index)
     const xs = indice.map(this.toBN)
     return xs
       .map((x, i) =>
         xs.reduce(
           (prod, o, j) =>
-            i !== j ? o.redSub(x).redInvm().redMul(o).redMul(prod) : prod,
+            i !== j
+              ? o.redSub(x).redInvm().redMul(o.redSub(a)).redMul(prod)
+              : prod,
           this.toBN(1),
         ),
       )
@@ -86,7 +103,16 @@ export class SecretSharing {
     return this.fromBN(_y.redMul(_l), 32)
   }
 
-  private sigma = (ys: Uint8Array[], ls: Uint8Array[]): Uint8Array => {
+  /**
+   * Lagrange Interpolcation
+   * @param index The x coordinate
+   * @param shares The sufficient number of shares
+   * @returns The y coordinate
+   */
+  interpolate = (index: Uint8Array, shares: Uint8Array[]): Uint8Array => {
+    const { indice } = this.validateShares(shares)
+    const ls = this.pi(indice, index)
+    const ys = shares.map((share) => share.subarray(32, 64))
     const sum = ys.reduce(
       (sum, y, i) => this.toBN(this.yl(y, ls[i])).redAdd(sum),
       this.toBN(0),
@@ -94,19 +120,35 @@ export class SecretSharing {
     return this.fromBN(sum, 32)
   }
 
+  /**
+   * Recontruct the original secret from its shares
+   * @param shares List of shares
+   * @returns The original secret
+   */
   construct = (shares: Uint8Array[]): Uint8Array => {
-    const { indice } = this.validateShares(shares)
-    const ys = shares.map((share) => share.subarray(32, 64))
-    const ls = this.pi(indice)
-    return this.sigma(ys, ls)
+    return this.interpolate(this.fromBN(this.toBN(0), 8), shares)
   }
 
-  share = (key: Uint8Array, t: number, n: number): Uint8Array[] => {
+  /**
+   * Split a secret into multiple shares. The algorithm allows t of n shares able to reconstruct the secret.
+   * @param key The secret
+   * @param t The threshold
+   * @param n The total number of shares
+   * @returns List of shares
+   */
+  share = (
+    key: Uint8Array,
+    t: number,
+    n: number,
+    id?: Uint8Array,
+  ): Uint8Array[] => {
     if (t < 1 || n < 1 || t > n) throw new Error('Invalid t-out-of-n format')
+    if (id && id.length !== 8)
+      throw new Error('id must be an 8-length bytes-like array')
     // Group identity
     const T = this.fromBN(this.toBN(t), 8)
     const N = this.fromBN(this.toBN(n), 8)
-    const ID = utils.randomBytes(8)
+    const ID = id || utils.randomBytes(8)
     // Randomize coefficients
     const a = this.toBN(key)
     const coefficients = [a]
