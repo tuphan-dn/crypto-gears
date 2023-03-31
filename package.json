@@ -1,6 +1,6 @@
 {
   "name": "@desig/core",
-  "version": "0.0.33",
+  "version": "0.0.34",
   "description": "The Decentralized Signature",
   "homepage": "https://core.desig.io/",
   "keywords": [
@@ -44,7 +44,6 @@
     "@ethereumjs/tx": "~4.0.2",
     "@solana/web3.js": "^1.73.0",
     "@types/bn.js": "^5.1.1",
-    "@types/buffer-xor": "^2.0.0",
     "@types/chai": "^4.3.3",
     "@types/mocha": "^9.1.1",
     "@types/node": "^18.7.18",

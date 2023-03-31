@@ -22,6 +22,11 @@ export class ECCurve {
     return Point.BASE.multiply(b).toRawBytes(true)
   }
 
+  static negPoint = (point: Uint8Array) => {
+    const a = Point.fromHex(point)
+    return a.negate().toRawBytes()
+  }
+
   static addPoint = (pointA: Uint8Array, pointB: Uint8Array): Uint8Array => {
     const a = Point.fromHex(pointA)
     const b = Point.fromHex(pointB)

@@ -131,7 +131,7 @@ export class SecretSharing {
 
   /**
    * Split a secret into multiple shares. The algorithm allows t of n shares able to reconstruct the secret.
-   * @param key The secret
+   * @param key The secret (Must be less than `this.red`)
    * @param t The threshold
    * @param n The total number of shares
    * @returns List of shares

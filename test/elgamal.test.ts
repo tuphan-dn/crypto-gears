@@ -1,25 +1,43 @@
 import { utils } from '@noble/ed25519'
 import { expect } from 'chai'
+import { get } from 'https'
 import { ECCurve, EdCurve, ElGamal } from '../dist'
+import { print } from './utils'
+
+const getRandomPoem = async (): Promise<string> =>
+  new Promise((resolve, reject) => {
+    get('https://poetrydb.org/random', (re) => {
+      let data = ''
+      re.on('data', (chunk) => (data += chunk))
+      re.on('end', () => {
+        const [{ lines }] = JSON.parse(data)
+        return resolve(lines.join('\n'))
+      })
+    }).on('error', (er) => reject(er))
+  })
 
 describe('ElGamal Encryption', function () {
-  it('encrypt/decrypt on EdDSA', () => {
-    const m = EdCurve.ff.norm(utils.randomBytes(32))
+  it('encrypt/decrypt on EdDSA', async () => {
+    const msg = await getRandomPoem()
+    const m = new TextEncoder().encode(msg)
     const privkey = EdCurve.ff.norm(utils.randomBytes(32))
     const pubkey = EdCurve.baseMul(privkey)
     const elgamal = new ElGamal(EdCurve)
-    const { c, R } = elgamal.encrypt(m, pubkey)
-    const _m = elgamal.decrypt({ c, R }, privkey)
+    const c = elgamal.encrypt(m, pubkey)
+    const _m = elgamal.decrypt(c, privkey)
+    print('the poem:', new TextDecoder().decode(_m))
     expect(m).to.deep.equal(_m)
   })
 
-  it('encrypt/decrypt on ECDSA', () => {
-    const m = ECCurve.ff.norm(utils.randomBytes(32))
+  it('encrypt/decrypt on ECDSA', async () => {
+    const msg = await getRandomPoem()
+    const m = new TextEncoder().encode(msg)
     const privkey = ECCurve.ff.norm(utils.randomBytes(32))
     const pubkey = ECCurve.baseMul(privkey)
     const elgamal = new ElGamal(ECCurve)
-    const { c, R } = elgamal.encrypt(m, pubkey)
-    const _m = elgamal.decrypt({ c, R }, privkey)
+    const c = elgamal.encrypt(m, pubkey)
+    const _m = elgamal.decrypt(c, privkey)
+    print('the poem:', new TextDecoder().decode(_m))
     expect(m).to.deep.equal(_m)
   })
 })
