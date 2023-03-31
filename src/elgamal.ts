@@ -53,7 +53,8 @@ export class ElGamal {
       )
     const parity = this._parity(msg)
     const padding: number[] = []
-    while (padding.length < ElGamal.plainTextLength - length) padding.push(0)
+    while (padding.length < ElGamal.plainTextLength - length)
+      padding.push(Math.floor(Math.random() * 256))
     const m = new Uint8Array([parity, length, ...padding, ...msg])
     const r = this.curve.ff.norm(utils.randomBytes(32))
     const R = this.curve.baseMul(r)
