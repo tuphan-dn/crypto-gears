@@ -1,5 +1,5 @@
 import { utils } from '@noble/ed25519'
-import { ECCurve } from './ectss'
+import BN from 'bn.js'
 import { EdCurve } from './edtss'
 
 /**
@@ -8,10 +8,11 @@ import { EdCurve } from './edtss'
  * The second byte is to length
  * The rest 30 bytes is to message
  *
+ * This lib only supports EdDSA.
  * This lib is not time-optimized. So it must be available to short message.
  */
 export class ElGamal {
-  constructor(private readonly curve: typeof EdCurve | typeof ECCurve) {}
+  constructor() {}
 
   static publicKeyLength = 32
   static privateKeyLength = 32
@@ -24,17 +25,6 @@ export class ElGamal {
     const c = new Uint8Array(a.length)
     for (let i = 0; i < a.length; i++) c[i] = a[i] ^ b[i]
     return c
-  }
-
-  /**
-   * Remove the recovery bit in case of secp256k1
-   * @param s The compressed point
-   * @returns Trimmed `s`
-   */
-  private trim = (s: Uint8Array) => {
-    const offset = s.length - ElGamal.publicKeyLength
-    if (offset < 0) throw new Error('Invalid public key length')
-    return s.length === ElGamal.publicKeyLength ? s : s.subarray(offset)
   }
 
   private _parity = (a: Uint8Array) => {
@@ -56,11 +46,11 @@ export class ElGamal {
     while (padding.length < ElGamal.plainTextLength - length)
       padding.push(Math.floor(Math.random() * 256))
     const m = new Uint8Array([parity, length, ...padding, ...msg])
-    const r = this.curve.ff.norm(utils.randomBytes(32))
-    const R = this.curve.baseMul(r)
-    const s = this.curve.mulScalar(pubkey, r)
-    const c = this.xor(m, this.trim(s))
-    return new Uint8Array([...this.trim(R), ...c])
+    const r = EdCurve.ff.norm(utils.randomBytes(32))
+    const R = EdCurve.baseMul(r)
+    const s = EdCurve.mulScalar(pubkey, r)
+    const c = this.xor(m, s)
+    return new Uint8Array([...R, ...c])
   }
 
   private _dec = (cipher: Uint8Array, privkey: Uint8Array): Uint8Array => {
@@ -70,8 +60,8 @@ export class ElGamal {
       throw new Error('Invalid cipher text length')
     const R = cipher.subarray(0, 32)
     const c = cipher.subarray(32, ElGamal.cipherTextLength)
-    const s = this.curve.mulScalar(R, privkey)
-    const p = this.xor(c, this.trim(s))
+    const s = EdCurve.mulScalar(R, privkey)
+    const p = this.xor(c, s)
     const [parity, length] = p
     const msg = p.subarray(ElGamal.blockLength - length, ElGamal.blockLength)
     if (parity !== this._parity(msg)) throw new Error('Incorrect cipher text')
@@ -93,14 +83,19 @@ export class ElGamal {
     return new Uint8Array(c.flat())
   }
 
-  decrypt = (c: Uint8Array, privkey: Uint8Array): Uint8Array => {
+  decrypt = async (c: Uint8Array, privkey: Uint8Array): Promise<Uint8Array> => {
+    const { scalar } = await utils.getExtendedPublicKey(privkey)
+    const priv = EdCurve.ff.decode(
+      new BN(scalar.toString()),
+      ElGamal.privateKeyLength,
+    )
     let m = []
     let offset = 0
     while (offset < c.length) {
       m.push([
         ...this._dec(
           c.subarray(offset, offset + ElGamal.cipherTextLength),
-          this.curve.ff.norm(privkey),
+          priv,
         ),
       ])
       offset = offset + ElGamal.cipherTextLength
