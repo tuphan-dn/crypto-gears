@@ -12,22 +12,20 @@ import { EdCurve } from './edtss'
  * This lib is not time-optimized. So it must be available to short message.
  */
 export class ElGamal {
-  constructor() {}
-
   static publicKeyLength = 32
   static privateKeyLength = 32
   static blockLength = 32
   static plainTextLength = 30
   static cipherTextLength = 64
 
-  private xor = (a: Uint8Array, b: Uint8Array): Uint8Array => {
+  static _xor = (a: Uint8Array, b: Uint8Array): Uint8Array => {
     if (a.length !== b.length) throw new Error('Invalid buffer length')
     const c = new Uint8Array(a.length)
     for (let i = 0; i < a.length; i++) c[i] = a[i] ^ b[i]
     return c
   }
 
-  private _parity = (a: Uint8Array) => {
+  static _parity = (a: Uint8Array) => {
     let b = a.reduce((x, y) => x ^ y, 0)
     b = b ^ (b >> 1)
     b = b ^ (b >> 2)
@@ -35,7 +33,7 @@ export class ElGamal {
     return b & 1
   }
 
-  private _enc = (msg: Uint8Array, pubkey: Uint8Array): Uint8Array => {
+  static _enc = (msg: Uint8Array, pubkey: Uint8Array): Uint8Array => {
     const length = msg.length
     if (length > ElGamal.plainTextLength)
       throw new Error(
@@ -49,11 +47,11 @@ export class ElGamal {
     const r = EdCurve.ff.norm(utils.randomBytes(32))
     const R = EdCurve.baseMul(r)
     const s = EdCurve.mulScalar(pubkey, r)
-    const c = this.xor(m, s)
+    const c = this._xor(m, s)
     return new Uint8Array([...R, ...c])
   }
 
-  private _dec = (cipher: Uint8Array, privkey: Uint8Array): Uint8Array => {
+  static _dec = (cipher: Uint8Array, privkey: Uint8Array): Uint8Array => {
     if (privkey.length !== ElGamal.privateKeyLength)
       throw new Error('Invalid private key length')
     if (cipher.length % ElGamal.cipherTextLength !== 0)
@@ -61,14 +59,14 @@ export class ElGamal {
     const R = cipher.subarray(0, 32)
     const c = cipher.subarray(32, ElGamal.cipherTextLength)
     const s = EdCurve.mulScalar(R, privkey)
-    const p = this.xor(c, s)
+    const p = this._xor(c, s)
     const [parity, length] = p
     const msg = p.subarray(ElGamal.blockLength - length, ElGamal.blockLength)
     if (parity !== this._parity(msg)) throw new Error('Incorrect cipher text')
     return msg
   }
 
-  encrypt = (m: Uint8Array, pubkey: Uint8Array) => {
+  static encrypt = (m: Uint8Array, pubkey: Uint8Array) => {
     let c = []
     let offset = 0
     while (offset < m.length) {
@@ -83,7 +81,10 @@ export class ElGamal {
     return new Uint8Array(c.flat())
   }
 
-  decrypt = async (c: Uint8Array, privkey: Uint8Array): Promise<Uint8Array> => {
+  static decrypt = async (
+    c: Uint8Array,
+    privkey: Uint8Array,
+  ): Promise<Uint8Array> => {
     const { scalar } = await utils.getExtendedPublicKey(privkey)
     const priv = EdCurve.ff.decode(
       new BN(scalar.toString()),
