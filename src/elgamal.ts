@@ -100,7 +100,7 @@ export class ElGamal {
       m.push([
         ...this._dec(
           c.subarray(offset, offset + ElGamal.cipherTextLength),
-          privkey,
+          this.curve.ff.norm(privkey),
         ),
       ])
       offset = offset + ElGamal.cipherTextLength
