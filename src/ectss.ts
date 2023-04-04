@@ -47,7 +47,7 @@ export class ECUtil {
   static shareRandomness = (t: number, n: number) => {
     const r = this.ff.norm(utils.randomBytes(ECUtil.randomnessLength))
     const z = this.ff.inv(r)
-    const secretSharing = new SecretSharing(this.ff.r, 'be')
+    const secretSharing = new SecretSharing(this.ff)
     const shares = secretSharing.share(z, t, n)
     const R = ECCurve.baseMul(r)
     return { shares, R, z }

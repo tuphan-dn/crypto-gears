@@ -10,7 +10,7 @@
 
 import { utils } from '@noble/ed25519'
 import BN from 'bn.js'
-import { RedBN } from './ff'
+import { FiniteField, RedBN } from './ff'
 
 export type ExtractedShare = {
   index: Uint8Array // 8 bytes
@@ -21,17 +21,14 @@ export type ExtractedShare = {
 }
 
 const allEqual = (arr: Uint8Array[]): boolean => {
-  for (let i = 0; i < arr.length; i++)
-    for (let j = i + 1; j < arr.length; j++)
-      if (Buffer.compare(arr[i], arr[j]) !== 0) return false
-  return true
+  if (!arr) return true
+  const [a, ...rest] = arr
+  const index = rest.findIndex((b) => Buffer.compare(a, b) !== 0)
+  return index < 0
 }
 
 export class SecretSharing {
-  constructor(
-    public readonly red: BN.ReductionContext,
-    public readonly end: BN.Endianness = 'le',
-  ) {}
+  constructor(public readonly ff: FiniteField) {}
 
   static shareLength = 64
 
@@ -56,11 +53,6 @@ export class SecretSharing {
   static compress = ({ index, t, n, id, share }: ExtractedShare) =>
     utils.concatBytes(index, t, n, id, share)
 
-  private toBN = (n: ConstructorParameters<typeof BN>[0]) =>
-    new BN(n, 16, this.end).toRed(this.red)
-  private fromBN = (n: RedBN, l: number): Uint8Array =>
-    Uint8Array.from(n.toArray(this.end, l))
-
   private validateShares = (shares: Uint8Array[]) => {
     shares.forEach((share) => {
       if (share.length !== SecretSharing.shareLength)
@@ -73,17 +65,17 @@ export class SecretSharing {
     if (!allEqual(ts) || !allEqual(ns) || !allEqual(ids))
       throw new Error('The shares are not in a same group')
     const t = ts[0]
-    if (this.toBN(indice.length).lt(this.toBN(t)))
+    if (this.ff.encode(indice.length).lt(this.ff.encode(t)))
       throw new Error('Not enough required number of shares')
     return { indice, t, n: ns[0], id: ids[0] }
   }
 
   pi = (
     indice: Uint8Array[],
-    index: Uint8Array = this.fromBN(this.toBN(0), 8),
+    index: Uint8Array = this.ff.decode(this.ff.encode(0), 8),
   ): Uint8Array[] => {
-    const a = this.toBN(index)
-    const xs = indice.map(this.toBN)
+    const a = this.ff.encode(index)
+    const xs = indice.map(this.ff.encode)
     return xs
       .map((x, i) =>
         xs.reduce(
@@ -91,16 +83,16 @@ export class SecretSharing {
             i !== j
               ? o.redSub(x).redInvm().redMul(o.redSub(a)).redMul(prod)
               : prod,
-          this.toBN(1),
+          this.ff.encode(1),
         ),
       )
-      .map((l) => this.fromBN(l, 32))
+      .map((l) => this.ff.decode(l, 32))
   }
 
   yl = (y: Uint8Array, l: Uint8Array): Uint8Array => {
-    const _y = this.toBN(y)
-    const _l = this.toBN(l)
-    return this.fromBN(_y.redMul(_l), 32)
+    const _y = this.ff.encode(y)
+    const _l = this.ff.encode(l)
+    return this.ff.decode(_y.redMul(_l), 32)
   }
 
   /**
@@ -114,10 +106,10 @@ export class SecretSharing {
     const ls = this.pi(indice, index)
     const ys = shares.map((share) => share.subarray(32, 64))
     const sum = ys.reduce(
-      (sum, y, i) => this.toBN(this.yl(y, ls[i])).redAdd(sum),
-      this.toBN(0),
+      (sum, y, i) => this.ff.encode(this.yl(y, ls[i])).redAdd(sum),
+      this.ff.encode(0),
     )
-    return this.fromBN(sum, 32)
+    return this.ff.decode(sum, 32)
   }
 
   /**
@@ -126,7 +118,7 @@ export class SecretSharing {
    * @returns The original secret
    */
   construct = (shares: Uint8Array[]): Uint8Array => {
-    return this.interpolate(this.fromBN(this.toBN(0), 8), shares)
+    return this.interpolate(this.ff.decode(this.ff.encode(0), 8), shares)
   }
 
   /**
@@ -140,37 +132,63 @@ export class SecretSharing {
     key: Uint8Array,
     t: number,
     n: number,
-    id?: Uint8Array,
+    id: Uint8Array = utils.randomBytes(8),
   ): Uint8Array[] => {
     if (t < 1 || n < 1 || t > n) throw new Error('Invalid t-out-of-n format')
     if (id && id.length !== 8)
       throw new Error('id must be an 8-length bytes-like array')
     // Group identity
-    const T = this.fromBN(this.toBN(t), 8)
-    const N = this.fromBN(this.toBN(n), 8)
-    const ID = id || utils.randomBytes(8)
+    const T = this.ff.decode(this.ff.encode(t), 8)
+    const N = this.ff.decode(this.ff.encode(n), 8)
+    const ID = id
     // Randomize coefficients
-    const a = this.toBN(key)
+    const a = this.ff.encode(key)
     const coefficients = [a]
     while (coefficients.length < t)
-      coefficients.push(this.toBN(utils.randomBytes(32)))
+      coefficients.push(this.ff.encode(utils.randomBytes(32)))
     // Build the polynomial
     const y = (x: RedBN): RedBN =>
       coefficients.reduce(
         (sum, co, i) => x.redPow(new BN(i)).redMul(co).redAdd(sum),
-        this.toBN(0),
+        this.ff.encode(0),
       )
     // Compute shares
     const shares: RedBN[] = []
-    for (let i = 0; i < n; i++) shares.push(y(this.toBN(i + 1)))
+    for (let i = 0; i < n; i++) shares.push(y(this.ff.encode(i + 1)))
     return shares.map((s, i) =>
       utils.concatBytes(
-        this.fromBN(this.toBN(i + 1), 8),
+        this.ff.decode(this.ff.encode(i + 1), 8),
         T,
         N,
         ID,
-        this.fromBN(s, 32),
+        this.ff.decode(s, 32),
       ),
     )
+  }
+
+  proactivate = (
+    t: number,
+    n: number,
+    id: Uint8Array = utils.randomBytes(8),
+  ) => {
+    const zero = this.ff.decode(this.ff.encode(0), 32)
+    const updates = this.share(zero, t, n, id)
+    return updates
+  }
+
+  merge = (prev: Uint8Array, next: Uint8Array) => {
+    if (
+      prev.length !== SecretSharing.shareLength ||
+      next.length !== SecretSharing.shareLength
+    )
+      throw new Error('Invalid share length')
+    const i = next.subarray(0, 8)
+    const t = next.subarray(8, 16)
+    const n = next.subarray(16, 24)
+    const id = next.subarray(24, 32)
+    const s = this.ff.encode(prev.subarray(32))
+    const u = this.ff.encode(next.subarray(32))
+    const a = this.ff.decode(s.redAdd(u), 32)
+    return utils.concatBytes(i, t, n, id, a)
   }
 }

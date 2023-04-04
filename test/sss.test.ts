@@ -3,7 +3,7 @@ import { SecretSharing, EdCurve, EdUtil, ECCurve, ECUtil } from '../dist'
 import { utils } from '@noble/ed25519'
 
 describe('Threshold Signature Scheme in LE', function () {
-  const secretSharing = new SecretSharing(EdCurve.ff.r, 'le')
+  const secretSharing = new SecretSharing(EdCurve.ff)
   const r = EdUtil.ff.norm(EdUtil.ff.rand())
 
   it('1-out-of-1 share/reconstruct', async () => {
@@ -63,10 +63,20 @@ describe('Threshold Signature Scheme in LE', function () {
     const _c = secretSharing.construct(cs)
     expect(c).deep.equals(_c)
   })
+
+  it('proactivate (3-out-of-3)', async () => {
+    const shares = secretSharing.share(r, 3, 3)
+    const updates = secretSharing.proactivate(3, 3, shares[0].subarray(24, 32))
+    const proactiveShares = shares.map((share, i) =>
+      secretSharing.merge(share, updates[i]),
+    )
+    const key = secretSharing.construct(proactiveShares)
+    expect(key).to.deep.equals(r)
+  })
 })
 
 describe('Threshold Signature Scheme in BE', function () {
-  const secretSharing = new SecretSharing(ECCurve.ff.r, 'be')
+  const secretSharing = new SecretSharing(ECCurve.ff)
   const r = ECUtil.ff.norm(ECUtil.ff.rand())
 
   it('1-out-of-1 share/reconstruct', async () => {
@@ -125,5 +135,15 @@ describe('Threshold Signature Scheme in BE', function () {
       })
     const _c = secretSharing.construct(cs)
     expect(c).deep.equals(_c)
+  })
+
+  it('proactivate (3-out-of-3)', async () => {
+    const shares = secretSharing.share(r, 3, 3)
+    const updates = secretSharing.proactivate(3, 3, shares[0].subarray(24, 32))
+    const proactiveShares = shares.map((share, i) =>
+      secretSharing.merge(share, updates[i]),
+    )
+    const key = secretSharing.construct(proactiveShares)
+    expect(key).to.deep.equals(r)
   })
 })

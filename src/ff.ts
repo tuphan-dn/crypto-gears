@@ -23,8 +23,9 @@ export class FiniteField {
   /**
    * Private encoder/decoder
    */
-  encode = (r: Uint8Array): RedBN => new BN(r, 16, this.en).toRed(this.r)
-  decode = (r: BN, len = 32): Uint8Array =>
+  encode = (r: ConstructorParameters<typeof BN>[0]): RedBN =>
+    new BN(r, 16, this.en).toRed(this.r)
+  decode = (r: BN | RedBN, len = 32): Uint8Array =>
     Uint8Array.from(r.toArray(this.en, len))
 
   /**

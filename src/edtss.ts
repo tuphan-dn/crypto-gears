@@ -43,7 +43,7 @@ export class EdUtil {
 
   static shareRandomness = (t: number, n: number) => {
     const r = this.ff.norm(utils.randomBytes(EdUtil.randomnessLength))
-    const secretSharing = new SecretSharing(this.ff.r, 'le')
+    const secretSharing = new SecretSharing(this.ff)
     const shares = secretSharing.share(r, t, n)
     const R = EdCurve.baseMul(r)
     return { shares, R }
