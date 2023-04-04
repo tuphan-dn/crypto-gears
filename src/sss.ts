@@ -65,14 +65,14 @@ export class SecretSharing {
     if (!allEqual(ts) || !allEqual(ns) || !allEqual(ids))
       throw new Error('The shares are not in a same group')
     const t = ts[0]
-    if (this.ff.encode(indice.length).lt(this.ff.encode(t)))
+    if (this.ff.numberToRedBN(indice.length).lt(this.ff.encode(t)))
       throw new Error('Not enough required number of shares')
     return { indice, t, n: ns[0], id: ids[0] }
   }
 
   pi = (
     indice: Uint8Array[],
-    index: Uint8Array = this.ff.decode(this.ff.encode(0), 8),
+    index: Uint8Array = this.ff.decode(this.ff.ZERO, 8),
   ): Uint8Array[] => {
     const a = this.ff.encode(index)
     const xs = indice.map(this.ff.encode)
@@ -83,7 +83,7 @@ export class SecretSharing {
             i !== j
               ? o.redSub(x).redInvm().redMul(o.redSub(a)).redMul(prod)
               : prod,
-          this.ff.encode(1),
+          this.ff.ONE,
         ),
       )
       .map((l) => this.ff.decode(l, 32))
@@ -96,7 +96,7 @@ export class SecretSharing {
   }
 
   /**
-   * Lagrange Interpolcation
+   * Lagrange Interpolation
    * @param index The x coordinate
    * @param shares The sufficient number of shares
    * @returns The y coordinate
@@ -107,7 +107,7 @@ export class SecretSharing {
     const ys = shares.map((share) => share.subarray(32, 64))
     const sum = ys.reduce(
       (sum, y, i) => this.ff.encode(this.yl(y, ls[i])).redAdd(sum),
-      this.ff.encode(0),
+      this.ff.ZERO,
     )
     return this.ff.decode(sum, 32)
   }
@@ -118,7 +118,7 @@ export class SecretSharing {
    * @returns The original secret
    */
   construct = (shares: Uint8Array[]): Uint8Array => {
-    return this.interpolate(this.ff.decode(this.ff.encode(0), 8), shares)
+    return this.interpolate(this.ff.decode(this.ff.ZERO, 8), shares)
   }
 
   /**
@@ -138,8 +138,8 @@ export class SecretSharing {
     if (id && id.length !== 8)
       throw new Error('id must be an 8-length bytes-like array')
     // Group identity
-    const T = this.ff.decode(this.ff.encode(t), 8)
-    const N = this.ff.decode(this.ff.encode(n), 8)
+    const T = this.ff.decode(this.ff.numberToRedBN(t), 8)
+    const N = this.ff.decode(this.ff.numberToRedBN(n), 8)
     const ID = id
     // Randomize coefficients
     const a = this.ff.encode(key)
@@ -150,14 +150,14 @@ export class SecretSharing {
     const y = (x: RedBN): RedBN =>
       coefficients.reduce(
         (sum, co, i) => x.redPow(new BN(i)).redMul(co).redAdd(sum),
-        this.ff.encode(0),
+        this.ff.ZERO,
       )
     // Compute shares
     const shares: RedBN[] = []
-    for (let i = 0; i < n; i++) shares.push(y(this.ff.encode(i + 1)))
+    for (let i = 0; i < n; i++) shares.push(y(this.ff.numberToRedBN(i + 1)))
     return shares.map((s, i) =>
       utils.concatBytes(
-        this.ff.decode(this.ff.encode(i + 1), 8),
+        this.ff.decode(this.ff.numberToRedBN(i + 1), 8),
         T,
         N,
         ID,
@@ -171,7 +171,7 @@ export class SecretSharing {
     n: number,
     id: Uint8Array = utils.randomBytes(8),
   ) => {
-    const zero = this.ff.decode(this.ff.encode(0), 32)
+    const zero = this.ff.decode(this.ff.ZERO, 32)
     const updates = this.share(zero, t, n, id)
     return updates
   }

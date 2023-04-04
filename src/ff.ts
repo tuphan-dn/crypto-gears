@@ -23,10 +23,20 @@ export class FiniteField {
   /**
    * Private encoder/decoder
    */
-  encode = (r: ConstructorParameters<typeof BN>[0]): RedBN =>
-    new BN(r, 16, this.en).toRed(this.r)
+  encode = (r: Uint8Array): RedBN => new BN(r, 16, this.en).toRed(this.r)
   decode = (r: BN | RedBN, len = 32): Uint8Array =>
     Uint8Array.from(r.toArray(this.en, len))
+
+  /**
+   * Utils
+   */
+  numberToRedBN = (r: number) => new BN(r).toRed(this.r)
+  get ZERO() {
+    return this.numberToRedBN(0)
+  }
+  get ONE() {
+    return this.numberToRedBN(1)
+  }
 
   /**
    * Normalize or Modularize
