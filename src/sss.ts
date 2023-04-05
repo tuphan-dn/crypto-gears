@@ -166,6 +166,13 @@ export class SecretSharing {
     )
   }
 
+  /**
+   * Proactive the shares
+   * @param t The threshold
+   * @param n The total number of shares
+   * @param id Next shares id
+   * @returns List of next shares
+   */
   proactivate = (
     t: number,
     n: number,
@@ -176,6 +183,12 @@ export class SecretSharing {
     return updates
   }
 
+  /**
+   * Merge the current share with an update to the next share
+   * @param prev The current share
+   * @param next The update
+   * @returns The next share
+   */
   merge = (prev: Uint8Array, next: Uint8Array) => {
     if (
       prev.length !== SecretSharing.shareLength ||
