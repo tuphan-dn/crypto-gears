@@ -167,7 +167,7 @@ export class SecretSharing {
   }
 
   /**
-   * Proactive the shares
+   * Proactivate the shares
    * @param t The threshold
    * @param n The total number of shares
    * @param id Next shares id
