@@ -1,4 +1,4 @@
-import { CURVE, Point, sync, utils, sign } from '@noble/ed25519'
+import { CURVE, Point, sync, utils } from '@noble/ed25519'
 import { sha512 } from '@noble/hashes/sha512'
 import BN from 'bn.js'
 import { SecretSharing } from './sss'
@@ -31,40 +31,14 @@ export class EdCurve {
     const s = BigInt(new BN(scalar, 16, 'le').toString())
     return p.multiply(s).toRawBytes()
   }
-}
-
-/**
- * EdUtil
- */
-export class EdUtil {
-  static randomnessLength = 32
-  static derivedKeyLength = 32
-  static ff = FiniteField.fromBigInt(CURVE.l, 'le')
-
-  static shareRandomness = (t: number, n: number) => {
-    const r = this.ff.norm(utils.randomBytes(EdUtil.randomnessLength))
-    const secretSharing = new SecretSharing(this.ff)
-    const shares = secretSharing.share(r, t, n)
-    const R = EdCurve.baseMul(r)
-    return { shares, R }
-  }
 
   static getDerivedKey = (privateKey: Uint8Array) => {
-    const derivedKey = sha512(privateKey.subarray(0, 32)).subarray(
-      0,
-      EdUtil.derivedKeyLength,
-    )
+    const derivedKey = sha512(privateKey.subarray(0, 32)).subarray(0, 32)
     derivedKey[0] &= 248
     derivedKey[31] &= 127
     derivedKey[31] |= 64
     return this.ff.norm(derivedKey)
   }
-
-  static getPublicKey = (privateKey: Uint8Array) =>
-    sync.getPublicKey(privateKey)
-
-  static sign = (msg: Uint8Array, privateKey: Uint8Array) =>
-    sign(msg, privateKey)
 }
 
 /**
@@ -73,7 +47,17 @@ export class EdUtil {
 export class EdTSS {
   static ff = FiniteField.fromBigInt(CURVE.l, 'le')
   static signatureLength = 64
+  static privateKeyLength = 32
   static publicKeyLength = 32
+  static randomnessLength = 32
+
+  static shareRandomness = (t: number, n: number) => {
+    const r = this.ff.norm(utils.randomBytes(EdTSS.randomnessLength))
+    const secretSharing = new SecretSharing(this.ff)
+    const shares = secretSharing.share(r, t, n)
+    const R = EdCurve.baseMul(r)
+    return { shares, R }
+  }
 
   /**
    * Add partial signatures
@@ -115,10 +99,10 @@ export class EdTSS {
     r: Uint8Array,
     derivedKey: Uint8Array,
   ) => {
-    if (r.length !== EdUtil.randomnessLength)
+    if (r.length !== this.randomnessLength)
       throw new Error('bad randomness size')
-    if (derivedKey.length !== EdUtil.derivedKeyLength)
-      throw new Error('bad derived key size')
+    if (derivedKey.length !== this.privateKeyLength)
+      throw new Error('bad private key size')
     if (publicKey.length !== EdTSS.publicKeyLength)
       throw new Error('bad public key size')
 

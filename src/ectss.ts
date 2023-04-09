@@ -1,12 +1,4 @@
-import {
-  CURVE,
-  Point,
-  getPublicKey,
-  sign,
-  utils,
-  Signature,
-  verify,
-} from '@noble/secp256k1'
+import { CURVE, Point, utils, Signature, verify } from '@noble/secp256k1'
 import BN from 'bn.js'
 import { SecretSharing } from './sss'
 import { FiniteField } from './ff'
@@ -15,7 +7,7 @@ import { FiniteField } from './ff'
  * ECCurve
  */
 export class ECCurve {
-  static ff = FiniteField.fromBigInt(CURVE.P, 'be')
+  static ff = FiniteField.fromBigInt(CURVE.n, 'be')
 
   static baseMul = (r: Uint8Array): Uint8Array => {
     const b = BigInt(new BN(r, 16, 'be').toString())
@@ -38,26 +30,10 @@ export class ECCurve {
     const s = BigInt(new BN(scalar, 16, 'be').toString())
     return p.multiply(s).toRawBytes(true)
   }
-}
 
-export class ECUtil {
-  static randomnessLength = 32
-  static ff = FiniteField.fromBigInt(CURVE.n, 'be')
-
-  static shareRandomness = (t: number, n: number) => {
-    const r = this.ff.norm(utils.randomBytes(ECUtil.randomnessLength))
-    const z = this.ff.inv(r)
-    const secretSharing = new SecretSharing(this.ff)
-    const shares = secretSharing.share(z, t, n)
-    const R = ECCurve.baseMul(r)
-    return { shares, R, z }
+  static getDerivedKey = (privateKey: Uint8Array) => {
+    return this.ff.norm(privateKey)
   }
-
-  static getPublicKey = (privateKey: Uint8Array) =>
-    getPublicKey(privateKey, true)
-
-  static sign = (msg: Uint8Array, privateKey: Uint8Array) =>
-    sign(msg, privateKey)
 }
 
 /**
@@ -65,7 +41,7 @@ export class ECUtil {
  */
 export class ECTSS {
   static ff = FiniteField.fromBigInt(CURVE.n, 'be')
-  static messageHashLength = 32
+  static randomnessLength = 32
   static privateKeyLength = 32
   static publicKeyLength = 33
 
@@ -84,6 +60,15 @@ export class ECTSS {
     return recovery
   }
 
+  static shareRandomness = (t: number, n: number) => {
+    const r = this.ff.norm(utils.randomBytes(this.randomnessLength))
+    const z = this.ff.inv(r)
+    const secretSharing = new SecretSharing(this.ff)
+    const shares = secretSharing.share(z, t, n)
+    const R = ECCurve.baseMul(r)
+    return { shares, R, z }
+  }
+
   /**
    * Add partial signatures
    * @param sigs Partial signatures
@@ -98,21 +83,21 @@ export class ECTSS {
   ): [Uint8Array, number] => {
     const Rx = ECTSS.ff.norm(R.subarray(1))
     const y = sigs.reduce(
-      (sum, correctSig) => ECUtil.ff.add(sum, correctSig),
-      ECUtil.ff.decode(new BN(0)),
+      (sum, correctSig) => this.ff.add(sum, correctSig),
+      this.ff.decode(new BN(0)),
     )
     const H2 = this.ff.pow(H, 2)
     const R2 = this.ff.pow(Rx, 2)
-    const s = ECUtil.ff.mul(
-      ECUtil.ff.add(
-        ECUtil.ff.add(ECUtil.ff.pow(y, 2), H2),
-        ECUtil.ff.neg(ECUtil.ff.add(ECUtil.ff.mul(R2, P2), Hz2)),
+    const s = this.ff.mul(
+      this.ff.add(
+        this.ff.add(this.ff.pow(y, 2), H2),
+        this.ff.neg(this.ff.add(this.ff.mul(R2, P2), Hz2)),
       ),
-      ECUtil.ff.inv(ECUtil.ff.decode(new BN(2))),
+      this.ff.inv(this.ff.decode(new BN(2))),
     )
     const sig = new Signature(
-      BigInt(ECUtil.ff.encode(Rx).toString()),
-      BigInt(ECUtil.ff.encode(s).toString()),
+      BigInt(this.ff.encode(Rx).toString()),
+      BigInt(this.ff.encode(s).toString()),
     )
     const recovery = this.recoveryBit(R, sig)
     return [this.finalizeSig(sig), recovery]
@@ -132,7 +117,7 @@ export class ECTSS {
     z: Uint8Array,
     privateKey: Uint8Array,
   ) => {
-    if (z.length !== ECUtil.randomnessLength)
+    if (z.length !== this.randomnessLength)
       throw new Error('bad randomness size')
     if (privateKey.length !== ECTSS.privateKeyLength)
       throw new Error('bad private key size')

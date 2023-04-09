@@ -2,24 +2,24 @@ import { utils } from '@noble/ed25519'
 import { Keypair } from '@solana/web3.js'
 import BN from 'bn.js'
 import { expect } from 'chai'
-import { SecretSharing, EdTSS, EdCurve, EdUtil } from '../dist'
+import { SecretSharing, EdTSS, EdCurve } from '../dist'
 import { msg } from './utils'
 
 describe('EdTSS', function () {
-  const secretSharing = new SecretSharing(EdTSS.ff.r, 'le')
+  const secretSharing = new SecretSharing(EdTSS.ff)
   const master = new Keypair()
 
   it('2-out-of-2 sign/verify', async () => {
     // Setup
     const publicKey = master.publicKey.toBuffer()
-    const derivedKey = EdUtil.getDerivedKey(master.secretKey)
+    const derivedKey = EdCurve.getDerivedKey(master.secretKey)
     const t = 2
     const n = 2
     // Key generation
     const sharedKeys = secretSharing.share(derivedKey, t, n)
 
     // Round 1
-    const { shares, R } = EdUtil.shareRandomness(t, n)
+    const { shares, R } = EdTSS.shareRandomness(t, n)
     // Round 2
     const sharedSigs = sharedKeys
       .slice(0, t)
@@ -51,13 +51,13 @@ describe('EdTSS', function () {
   it('2-out-of-3 sign/verify', async () => {
     // Setup
     const publicKey = master.publicKey.toBuffer()
-    const derivedKey = EdUtil.getDerivedKey(master.secretKey)
+    const derivedKey = EdCurve.getDerivedKey(master.secretKey)
     const t = 2
     const n = 3
     // Key generation
     const sharedKeys = secretSharing.share(derivedKey, t, n)
     // Round 1
-    const { shares, R } = EdUtil.shareRandomness(t, n)
+    const { shares, R } = EdTSS.shareRandomness(t, n)
     // Round 2
     const sharedSigs = sharedKeys
       .slice(0, t)

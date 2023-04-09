@@ -7,7 +7,7 @@ import {
   SystemProgram,
   Transaction,
 } from '@solana/web3.js'
-import { SecretSharing, EdTSS, EdCurve, EdUtil } from '../dist'
+import { SecretSharing, EdTSS, EdCurve } from '../dist'
 import { solscan, print, privsol } from './utils'
 import { utils } from '@noble/ed25519'
 import { decode } from 'bs58'
@@ -49,7 +49,7 @@ const sendAndConfirm = async (signedTx: Transaction) => {
 }
 
 describe('Solana Interaction', function () {
-  const secretSharing = new SecretSharing(EdTSS.ff.r, 'le')
+  const secretSharing = new SecretSharing(EdTSS.ff)
   const master = Keypair.fromSecretKey(decode(privsol))
 
   before(async () => {
@@ -72,13 +72,13 @@ describe('Solana Interaction', function () {
     const t = 2
     const n = 2
     // Setup
-    const derivedKey = EdUtil.getDerivedKey(master.secretKey)
+    const derivedKey = EdCurve.getDerivedKey(master.secretKey)
     const sharedKeys = secretSharing.share(derivedKey, t, n)
     // Build the tx
     const tx = await transfer(master.publicKey)
     // Serialize the tx
     const msg = tx.serializeMessage()
-    const { shares, R } = EdUtil.shareRandomness(t, n)
+    const { shares, R } = EdTSS.shareRandomness(t, n)
     // Multi sig
     const sharedSigs = sharedKeys
       .slice(0, t)
@@ -112,13 +112,13 @@ describe('Solana Interaction', function () {
     const t = 2
     const n = 3
     // Setup
-    const derivedKey = EdUtil.getDerivedKey(master.secretKey)
+    const derivedKey = EdCurve.getDerivedKey(master.secretKey)
     const sharedKeys = secretSharing.share(derivedKey, t, n)
     // Build the tx
     const tx = await transfer(master.publicKey)
     // Serialize the tx
     const msg = tx.serializeMessage()
-    const { shares, R } = EdUtil.shareRandomness(t, n)
+    const { shares, R } = EdTSS.shareRandomness(t, n)
     // Multi sig
     const sharedSigs = sharedKeys
       .slice(0, t)

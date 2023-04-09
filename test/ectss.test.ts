@@ -1,25 +1,25 @@
 import { getPublicKey, utils } from '@noble/secp256k1'
 import BN from 'bn.js'
 import { expect } from 'chai'
-import { ECTSS, ECUtil, SecretSharing } from '../dist'
+import { ECTSS, SecretSharing } from '../dist'
 import { msg } from './utils'
 
 describe('ECTSS', () => {
-  const secretSharing = new SecretSharing(ECTSS.ff.r, 'be')
+  const secretSharing = new SecretSharing(ECTSS.ff)
   const master = utils.randomPrivateKey()
 
   it('2-out-of-2 sign/verify', async () => {
     // Setup
     const publicKey = getPublicKey(master, true)
-    const P2 = ECUtil.ff.pow(master, 2)
+    const P2 = ECTSS.ff.pow(master, 2)
     const t = 2
     const n = 2
     // Key generation
     const sharedKeys = secretSharing.share(master, t, n)
     // Round 1
     const hashMsg = await utils.sha256(msg)
-    const { shares, R, z } = ECUtil.shareRandomness(t, n)
-    const Hz2 = ECUtil.ff.pow(ECUtil.ff.add(hashMsg, ECUtil.ff.neg(z)), 2) // (H-z)^2
+    const { shares, R, z } = ECTSS.shareRandomness(t, n)
+    const Hz2 = ECTSS.ff.pow(ECTSS.ff.add(hashMsg, ECTSS.ff.neg(z)), 2) // (H-z)^2
     // Round 2
     const sharedSigs = sharedKeys
       .slice(0, t)
@@ -42,15 +42,15 @@ describe('ECTSS', () => {
   it('2-out-of-3 sign/verify', async () => {
     // Setup
     const publicKey = getPublicKey(master, true)
-    const P2 = ECUtil.ff.pow(master, 2)
+    const P2 = ECTSS.ff.pow(master, 2)
     const t = 2
     const n = 3
     // Key generation
     const sharedKeys = secretSharing.share(master, t, n)
     // Round 1
     const hashMsg = await utils.sha256(msg)
-    const { shares, R, z } = ECUtil.shareRandomness(t, n)
-    const Hz2 = ECUtil.ff.pow(ECUtil.ff.add(hashMsg, ECUtil.ff.neg(z)), 2) // (H-z)^2
+    const { shares, R, z } = ECTSS.shareRandomness(t, n)
+    const Hz2 = ECTSS.ff.pow(ECTSS.ff.add(hashMsg, ECTSS.ff.neg(z)), 2) // (H-z)^2
     // Round 2
     const sharedSigs = sharedKeys
       .slice(0, t)

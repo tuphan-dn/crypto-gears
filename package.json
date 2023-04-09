@@ -1,6 +1,6 @@
 {
   "name": "@desig/core",
-  "version": "0.0.38",
+  "version": "0.1.0",
   "description": "The Decentralized Signature",
   "homepage": "https://core.desig.io/",
   "keywords": [
@@ -30,7 +30,11 @@
     "predeploy": "typedoc --excludePrivate --excludeProtected ./src/index.ts",
     "deploy": "gh-pages -d docs",
     "pretest": "yarn build",
-    "test": "mocha --require ts-node/register -t 120000 test/**/sss.test.ts",
+    "test": "mocha --require ts-node/register -t 120000 test/**/*.test.ts",
+    "test:watch": "nodemon --ext ts --watch src --watch test --exec \"yarn test\"",
+    "predebug": "yarn build",
+    "debug": "ts-node test/debug.ts",
+    "debug:watch": "nodemon --ext ts --watch src --watch test --exec \"yarn debug\"",
     "clean": "rimraf dist"
   },
   "dependencies": {

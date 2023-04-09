@@ -1,10 +1,10 @@
 import { expect } from 'chai'
-import { SecretSharing, EdUtil, ECUtil } from '../dist'
+import { SecretSharing, EdTSS, ECTSS } from '../dist'
 import { utils } from '@noble/ed25519'
 
 describe('Threshold Signature Scheme in LE', function () {
-  const secretSharing = new SecretSharing(EdUtil.ff)
-  const r = EdUtil.ff.rand()
+  const secretSharing = new SecretSharing(EdTSS.ff)
+  const r = EdTSS.ff.rand()
 
   it('1-out-of-1 share/reconstruct', async () => {
     const shares = secretSharing.share(r, 1, 1)
@@ -74,8 +74,8 @@ describe('Threshold Signature Scheme in LE', function () {
 })
 
 describe('Threshold Signature Scheme in BE', function () {
-  const secretSharing = new SecretSharing(ECUtil.ff)
-  const r = ECUtil.ff.rand()
+  const secretSharing = new SecretSharing(ECTSS.ff)
+  const r = ECTSS.ff.rand()
 
   it('1-out-of-1 share/reconstruct', async () => {
     const shares = secretSharing.share(r, 1, 1)

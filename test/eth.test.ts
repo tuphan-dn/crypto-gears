@@ -3,7 +3,7 @@ import { Transaction } from '@ethereumjs/tx'
 import { sign } from '@noble/secp256k1'
 import BN from 'bn.js'
 import Web3 from 'web3'
-import { ECTSS, ECUtil, SecretSharing } from '../dist'
+import { ECTSS, SecretSharing } from '../dist'
 import { asyncWait, etherscan, print, priveth } from './utils'
 
 const cluster = 'https://goerli.infura.io/v3/783c24a3a364474a8dbed638263dc410'
@@ -52,7 +52,7 @@ const sendAndConfirm = async (signedTx: Transaction) => {
 }
 
 describe('Ethereum Integration', function () {
-  const secretSharing = new SecretSharing(ECTSS.ff.r, 'be')
+  const secretSharing = new SecretSharing(ECTSS.ff)
   const master = web3.eth.accounts.privateKeyToAccount(priveth)
 
   before(async () => {
@@ -101,14 +101,14 @@ describe('Ethereum Integration', function () {
     const n = 2
     // Setup
     const derivedKey = Buffer.from(web3.utils.hexToBytes(master.privateKey))
-    const P2 = ECUtil.ff.pow(derivedKey, 2)
+    const P2 = ECTSS.ff.pow(derivedKey, 2)
     const sharedKeys = secretSharing.share(derivedKey, t, n)
     // Build the tx
     const tx = await transfer(master.address)
     // Serialize the tx
     const msg = tx.getMessageToSign()
-    const { shares, R, z } = ECUtil.shareRandomness(t, n)
-    const Hz2 = ECUtil.ff.pow(ECUtil.ff.add(msg, ECUtil.ff.neg(z)), 2) // (H-z)^2
+    const { shares, R, z } = ECTSS.shareRandomness(t, n)
+    const Hz2 = ECTSS.ff.pow(ECTSS.ff.add(msg, ECTSS.ff.neg(z)), 2) // (H-z)^2
     // Multi sig
     const sharedSigs = sharedKeys
       .slice(0, t)
@@ -144,14 +144,14 @@ describe('Ethereum Integration', function () {
     const n = 3
     // Setup
     const derivedKey = Buffer.from(web3.utils.hexToBytes(master.privateKey))
-    const P2 = ECUtil.ff.pow(derivedKey, 2)
+    const P2 = ECTSS.ff.pow(derivedKey, 2)
     const sharedKeys = secretSharing.share(derivedKey, t, n)
     // Build the tx
     const tx = await transfer(master.address)
     // Serialize the tx
     const msg = tx.getMessageToSign()
-    const { shares, R, z } = ECUtil.shareRandomness(t, n)
-    const Hz2 = ECUtil.ff.pow(ECUtil.ff.add(msg, ECUtil.ff.neg(z)), 2) // (H-z)^2
+    const { shares, R, z } = ECTSS.shareRandomness(t, n)
+    const Hz2 = ECTSS.ff.pow(ECTSS.ff.add(msg, ECTSS.ff.neg(z)), 2) // (H-z)^2
     // Multi sig
     const sharedSigs = sharedKeys
       .slice(0, t)
