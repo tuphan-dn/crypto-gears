@@ -11,7 +11,7 @@ export class EdCurve {
   static ff = FiniteField.fromBigInt(CURVE.l, 'le')
 
   static baseMul = (r: Uint8Array) => {
-    const b = BigInt(this.ff.encode(r).toString())
+    const b = BigInt(new BN(r, 16, this.ff.en).toString())
     return Point.BASE.multiply(b).toRawBytes()
   }
 
@@ -28,7 +28,7 @@ export class EdCurve {
 
   static mulScalar = (point: Uint8Array, scalar: Uint8Array) => {
     const p = Point.fromHex(point)
-    const s = BigInt(new BN(scalar, 16, 'le').toString())
+    const s = BigInt(new BN(scalar, 16, this.ff.en).toString())
     return p.multiply(s).toRawBytes()
   }
 

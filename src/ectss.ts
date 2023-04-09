@@ -17,7 +17,7 @@ export class ECCurve {
   static ff = FiniteField.fromBigInt(CURVE.n, 'be')
 
   static baseMul = (r: Uint8Array): Uint8Array => {
-    const b = BigInt(new BN(r, 16, 'be').toString())
+    const b = BigInt(new BN(r, 16, this.ff.en).toString())
     return Point.BASE.multiply(b).toRawBytes(true)
   }
 
@@ -34,7 +34,7 @@ export class ECCurve {
 
   static mulScalar = (point: Uint8Array, scalar: Uint8Array): Uint8Array => {
     const p = Point.fromHex(point)
-    const s = BigInt(new BN(scalar, 16, 'be').toString())
+    const s = BigInt(new BN(scalar, 16, this.ff.en).toString())
     return p.multiply(s).toRawBytes(true)
   }
 
