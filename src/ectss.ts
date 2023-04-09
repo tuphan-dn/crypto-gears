@@ -43,7 +43,7 @@ export class ECCurve {
   }
 
   static getPublicKey = (privateKey: Uint8Array) => {
-    return getPublicKey(privateKey)
+    return getPublicKey(privateKey, true)
   }
 }
 
