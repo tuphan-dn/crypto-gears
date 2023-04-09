@@ -11,7 +11,7 @@ export class EdCurve {
   static ff = FiniteField.fromBigInt(CURVE.l, 'le')
 
   static baseMul = (r: Uint8Array) => {
-    const b = BigInt(new BN(r, 16, 'le').toString())
+    const b = BigInt(this.ff.encode(r).toString())
     return Point.BASE.multiply(b).toRawBytes()
   }
 
@@ -38,6 +38,12 @@ export class EdCurve {
     derivedKey[31] &= 127
     derivedKey[31] |= 64
     return this.ff.norm(derivedKey)
+  }
+
+  static getPublicKey = (privateKey: Uint8Array) => {
+    const privkey = this.getDerivedKey(privateKey)
+    const pubkey = this.baseMul(privkey)
+    return pubkey
   }
 }
 

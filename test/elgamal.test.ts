@@ -1,11 +1,5 @@
-import {
-  getPublicKey as getEdPublicKey,
-  utils as edUtils,
-} from '@noble/ed25519'
-import {
-  getPublicKey as getEcPublicKey,
-  utils as ecUtils,
-} from '@noble/secp256k1'
+import { utils as edUtils } from '@noble/ed25519'
+import { utils as ecUtils } from '@noble/secp256k1'
 import { expect } from 'chai'
 import { get } from 'https'
 import { ECCurve, EdCurve, ElGamal } from '../dist'
@@ -29,7 +23,7 @@ describe('ElGamal Encryption', function () {
     const msg = await getRandomPoem()
     const m = new TextEncoder().encode(msg)
     const privkey = edUtils.randomPrivateKey()
-    const pubkey = await getEdPublicKey(privkey)
+    const pubkey = EdCurve.getPublicKey(privkey)
     const c = elgamal.encrypt(m, pubkey)
     const _m = await elgamal.decrypt(c, privkey)
     print('the poem:', new TextDecoder().decode(_m))
@@ -41,7 +35,7 @@ describe('ElGamal Encryption', function () {
     const msg = await getRandomPoem()
     const m = new TextEncoder().encode(msg)
     const privkey = ecUtils.randomPrivateKey()
-    const pubkey = getEcPublicKey(privkey)
+    const pubkey = ECCurve.getPublicKey(privkey)
     const c = elgamal.encrypt(m, pubkey)
     const _m = await elgamal.decrypt(c, privkey)
     print('the poem:', new TextDecoder().decode(_m))

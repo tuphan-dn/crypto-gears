@@ -1,4 +1,11 @@
-import { CURVE, Point, utils, Signature, verify } from '@noble/secp256k1'
+import {
+  CURVE,
+  Point,
+  utils,
+  Signature,
+  verify,
+  getPublicKey,
+} from '@noble/secp256k1'
 import BN from 'bn.js'
 import { SecretSharing } from './sss'
 import { FiniteField } from './ff'
@@ -33,6 +40,10 @@ export class ECCurve {
 
   static getDerivedKey = (privateKey: Uint8Array) => {
     return this.ff.norm(privateKey)
+  }
+
+  static getPublicKey = (privateKey: Uint8Array) => {
+    return getPublicKey(privateKey)
   }
 }
 
