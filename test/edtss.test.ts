@@ -44,7 +44,7 @@ describe('EdTSS', function () {
     )
     // Combine sigs
     const sig = EdTSS.addSig(correctSigs)
-    const ok = EdTSS.verify(msg, sig, publicKey)
+    const ok = await EdTSS.verify(msg, sig, publicKey)
     expect(ok).equal(true)
   })
 
@@ -82,7 +82,7 @@ describe('EdTSS', function () {
     )
     // Combine sigs
     const sig = EdTSS.addSig(correctSigs)
-    const ok = EdTSS.verify(msg, sig, publicKey)
+    const ok = await EdTSS.verify(msg, sig, publicKey)
     expect(ok).is.true
   })
 })

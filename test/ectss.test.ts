@@ -35,7 +35,7 @@ describe('ECTSS', () => {
     )
     // Combine sigs
     const [sig] = ECTSS.addSig(correctSigs, hashMsg, R, P2, Hz2)
-    const ok = ECTSS.verify(hashMsg, sig, publicKey)
+    const ok = await ECTSS.verify(hashMsg, sig, publicKey)
     expect(ok).is.true
   })
 
@@ -66,7 +66,7 @@ describe('ECTSS', () => {
     )
     // Combine sigs
     const [sig] = ECTSS.addSig(correctSigs, hashMsg, R, P2, Hz2)
-    const ok = ECTSS.verify(hashMsg, sig, publicKey)
+    const ok = await ECTSS.verify(hashMsg, sig, publicKey)
     expect(ok).is.true
   })
 })

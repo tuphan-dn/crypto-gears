@@ -1,4 +1,4 @@
-import { CURVE, Point, sync, utils } from '@noble/ed25519'
+import { CURVE, Point, utils, verify } from '@noble/ed25519'
 import { sha512 } from '@noble/hashes/sha512'
 import BN from 'bn.js'
 import { SecretSharing } from './sss'
@@ -139,6 +139,9 @@ export class EdTSS {
    * Verify the message.
    * It's identical to the ed25519 verification.
    */
-  static verify = (msg: Uint8Array, sig: Uint8Array, pubkey: Uint8Array) =>
-    sync.verify(sig, msg, pubkey)
+  static verify = async (
+    msg: Uint8Array,
+    sig: Uint8Array,
+    pubkey: Uint8Array,
+  ) => verify(sig, msg, pubkey)
 }

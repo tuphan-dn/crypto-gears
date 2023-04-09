@@ -141,6 +141,9 @@ export class ECTSS {
    * Verify the message.
    * It's identical to the secp256k1 verification.
    */
-  static verify = (msg: Uint8Array, sig: Uint8Array, pubkey: Uint8Array) =>
-    verify(sig, msg, pubkey, { strict: false })
+  static verify = async (
+    msg: Uint8Array,
+    sig: Uint8Array,
+    pubkey: Uint8Array,
+  ) => verify(sig, msg, pubkey, { strict: false })
 }
