@@ -8,7 +8,7 @@ import { FiniteField } from './ff'
  * EdCurve
  */
 export class EdCurve {
-  static ff = FiniteField.fromBigInt(CURVE.l, 'le')
+  static ff = FiniteField.fromBigInt(CURVE.n, 'le')
 
   static baseMul = (r: Uint8Array) => {
     const b = BigInt(new BN(r, 16, this.ff.en).toString())
