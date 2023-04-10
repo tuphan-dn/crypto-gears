@@ -68,6 +68,14 @@ export class FiniteField {
   neg = (a: Uint8Array) => this.decode(this.encode(a).redNeg())
 
   /**
+   * Subtract 2 numbers
+   * @param a
+   * @param b
+   * @returns
+   */
+  sub = (a: Uint8Array, b: Uint8Array) => this.add(a, this.neg(b))
+
+  /**
    * Multiply 2 numbers
    * @param a
    * @param b
@@ -82,6 +90,14 @@ export class FiniteField {
    * @returns
    */
   inv = (a: Uint8Array) => this.decode(this.encode(a).redInvm())
+
+  /**
+   * Divide 2 numbers
+   * @param a
+   * @param b
+   * @returns
+   */
+  div = (a: Uint8Array, b: Uint8Array) => this.mul(a, this.inv(b))
 
   /**
    * Square a number
