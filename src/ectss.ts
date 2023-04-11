@@ -42,7 +42,8 @@ export class ECCurve {
     return this.ff.norm(privateKey)
   }
 
-  static getPublicKey = (privateKey: Uint8Array) => {
+  static getPublicKey = (privateKey: Uint8Array, derived = false) => {
+    if (!derived) privateKey = this.getDerivedKey(privateKey)
     return getPublicKey(privateKey, true)
   }
 }

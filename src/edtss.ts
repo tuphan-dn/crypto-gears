@@ -40,9 +40,9 @@ export class EdCurve {
     return this.ff.norm(derivedKey)
   }
 
-  static getPublicKey = (privateKey: Uint8Array) => {
-    const privkey = this.getDerivedKey(privateKey)
-    const pubkey = this.baseMul(privkey)
+  static getPublicKey = (privateKey: Uint8Array, derived = false) => {
+    if (!derived) privateKey = this.getDerivedKey(privateKey)
+    const pubkey = this.baseMul(privateKey)
     return pubkey
   }
 }
