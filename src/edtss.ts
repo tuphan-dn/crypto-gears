@@ -51,7 +51,7 @@ export class EdCurve {
  * EdTSS
  */
 export class EdTSS {
-  static ff = FiniteField.fromBigInt(CURVE.l, 'le')
+  static ff = FiniteField.fromBigInt(CURVE.n, 'le')
   static signatureLength = 64
   static privateKeyLength = 32
   static publicKeyLength = 32
