@@ -96,6 +96,29 @@ export class SecretSharing {
   }
 
   /**
+   * Derive the efficient of the highest term
+   * @param shares Secret shares
+   * @returns The highest efficient
+   */
+  ft1 = (shares: Uint8Array[]): Uint8Array => {
+    const xs = shares.map((share) => share.subarray(0, 8)).map(this.ff.encode)
+    const ls = xs
+      .map((x, i) =>
+        xs.reduce(
+          (prod, o, j) => (i !== j ? x.redSub(o).redInvm().redMul(prod) : prod),
+          this.ff.ONE,
+        ),
+      )
+      .map((l) => this.ff.decode(l, 32))
+    const ys = shares.map((share) => share.subarray(32, 64))
+    const sum = ys.reduce(
+      (sum, y, i) => this.ff.encode(this.yl(y, ls[i])).redAdd(sum),
+      this.ff.ZERO,
+    )
+    return this.ff.decode(sum, 32)
+  }
+
+  /**
    * Lagrange Interpolation
    * @param index The x coordinate
    * @param shares The sufficient number of shares
@@ -199,9 +222,7 @@ export class SecretSharing {
     const t = next.subarray(8, 16)
     const n = next.subarray(16, 24)
     const id = next.subarray(24, 32)
-    const s = this.ff.encode(prev.subarray(32))
-    const u = this.ff.encode(next.subarray(32))
-    const a = this.ff.decode(s.redAdd(u), 32)
+    const a = this.ff.add(prev.subarray(32), next.subarray(32))
     return utils.concatBytes(i, t, n, id, a)
   }
 }
