@@ -1,6 +1,6 @@
 import { expect } from 'chai'
 import { SecretSharing, EdTSS, ECTSS } from '../dist'
-import { concatBytes } from '@noble/hashes/utils'
+import { concatBytes, randomBytes } from '@noble/hashes/utils'
 
 describe('Threshold Signature Scheme in LE', function () {
   const secretSharing = new SecretSharing(EdTSS.ff)
@@ -49,13 +49,19 @@ describe('Threshold Signature Scheme in LE', function () {
     const b = secretSharing.ff.encode(secretSharing.ff.rand())
     const c = secretSharing.ff.decode(a.redAdd(b), 32)
     const as = secretSharing.share(secretSharing.ff.decode(a, 32), 2, 3)
-    const bs = secretSharing.share(secretSharing.ff.decode(b, 32), 2, 3)
+    const bs = secretSharing.share(
+      secretSharing.ff.decode(b, 32),
+      2,
+      3,
+      as.map((e) => e.subarray(0, 8)),
+    )
     const cs = as
       .filter((_, i) => i !== 2)
       .map((_, i) => {
-        const x = secretSharing.ff.encode(as[i].subarray(32))
-        const y = secretSharing.ff.encode(bs[i].subarray(32))
-        const secret = secretSharing.ff.decode(x.redAdd(y), 32)
+        const secret = secretSharing.ff.add(
+          as[i].subarray(32),
+          bs[i].subarray(32),
+        )
         return concatBytes(as[i].subarray(0, 32), secret)
       })
     const _c = secretSharing.construct(cs)
@@ -64,7 +70,11 @@ describe('Threshold Signature Scheme in LE', function () {
 
   it('proactivate (3-out-of-3)', async () => {
     const shares = secretSharing.share(secret, 3, 3)
-    const updates = secretSharing.proactivate(3, 3)
+    const updates = secretSharing.proactivate(
+      3,
+      3,
+      shares.map((e) => e.subarray(0, 8)),
+    )
     const proactiveShares = shares.map((share, i) =>
       secretSharing.merge(share, updates[i]),
     )
@@ -75,7 +85,10 @@ describe('Threshold Signature Scheme in LE', function () {
   it('n-extension (3-out-of-3)', async () => {
     const shares = secretSharing.share(secret, 3, 3)
     const r = secretSharing.ff.rand()
-    const rs = secretSharing.share(r, 3, 4)
+    const rs = secretSharing.share(r, 3, 4, [
+      ...shares.map((e) => e.subarray(0, 8)),
+      randomBytes(8),
+    ])
     const zs = shares.map((share, i) =>
       concatBytes(
         share.subarray(0, 32),
@@ -83,17 +96,18 @@ describe('Threshold Signature Scheme in LE', function () {
       ),
     )
     const rk = rs[rs.length - 1]
-    const zk = secretSharing.interpolate(
-      secretSharing.ff.decode(secretSharing.ff.numberToRedBN(4), 8),
-      zs,
-    )
+    const zk = secretSharing.interpolate(rk.subarray(0, 8), zs)
     shares.push(
       concatBytes(
         rk.subarray(0, 32),
         secretSharing.ff.sub(zk, rk.subarray(32)),
       ),
     )
-    const updates = secretSharing.proactivate(3, 4)
+    const updates = secretSharing.proactivate(
+      3,
+      4,
+      shares.map((e) => e.subarray(0, 8)),
+    )
     const proactiveShares = shares.map((share, i) =>
       secretSharing.merge(share, updates[i]),
     )
@@ -101,9 +115,15 @@ describe('Threshold Signature Scheme in LE', function () {
     expect(key).to.deep.equals(secret)
   })
 
-  it('n-shrink (3-out-of-4)', async () => {
+  it('n-reduction (3-out-of-4)', async () => {
     const shares = secretSharing.share(secret, 3, 4)
-    const updates = secretSharing.proactivate(3, 3)
+    const updates = secretSharing.proactivate(
+      3,
+      3,
+      shares
+        .filter((_, i) => i !== shares.length - 1)
+        .map((e) => e.subarray(0, 8)),
+    )
     const proactiveShares = updates.map((update, i) =>
       secretSharing.merge(shares[i], update),
     )
@@ -113,7 +133,11 @@ describe('Threshold Signature Scheme in LE', function () {
 
   it('t-extension (3-out-of-4)', async () => {
     const shares = secretSharing.share(secret, 3, 4)
-    const updates = secretSharing.proactivate(4, 4)
+    const updates = secretSharing.proactivate(
+      4,
+      4,
+      shares.map((e) => e.subarray(0, 8)),
+    )
     const proactiveShares = updates.map((update, i) =>
       secretSharing.merge(shares[i], update),
     )
@@ -121,10 +145,15 @@ describe('Threshold Signature Scheme in LE', function () {
     expect(key).to.deep.equals(secret)
   })
 
-  it('t-shrink (3-out-of-3)', async () => {
+  it('t-reduction (3-out-of-3)', async () => {
     const shares = secretSharing.share(secret, 3, 3)
     const r = secretSharing.ff.rand()
-    const rs = secretSharing.share(r, 2, 3)
+    const rs = secretSharing.share(
+      r,
+      2,
+      3,
+      shares.map((e) => e.subarray(0, 8)),
+    )
     const zs = shares.map((share, i) =>
       concatBytes(
         share.subarray(0, 32),
@@ -149,7 +178,11 @@ describe('Threshold Signature Scheme in LE', function () {
         ),
       )
     })
-    const updates = secretSharing.proactivate(2, 3)
+    const updates = secretSharing.proactivate(
+      2,
+      3,
+      updatedShares.map((e) => e.subarray(0, 8)),
+    )
     const proactiveShares = updatedShares.map((share, i) =>
       secretSharing.merge(share, updates[i]),
     )
@@ -208,13 +241,19 @@ describe('Threshold Signature Scheme in BE', function () {
     const b = secretSharing.ff.encode(secretSharing.ff.rand())
     const c = secretSharing.ff.decode(a.redAdd(b), 32)
     const as = secretSharing.share(secretSharing.ff.decode(a, 32), 2, 3)
-    const bs = secretSharing.share(secretSharing.ff.decode(b, 32), 2, 3)
+    const bs = secretSharing.share(
+      secretSharing.ff.decode(b, 32),
+      2,
+      3,
+      as.map((e) => e.subarray(0, 8)),
+    )
     const cs = as
       .filter((_, i) => i !== 2)
       .map((_, i) => {
-        const x = secretSharing.ff.encode(as[i].subarray(32))
-        const y = secretSharing.ff.encode(bs[i].subarray(32))
-        const secret = secretSharing.ff.decode(x.redAdd(y), 32)
+        const secret = secretSharing.ff.add(
+          as[i].subarray(32),
+          bs[i].subarray(32),
+        )
         return concatBytes(as[i].subarray(0, 32), secret)
       })
     const _c = secretSharing.construct(cs)
@@ -223,7 +262,11 @@ describe('Threshold Signature Scheme in BE', function () {
 
   it('proactivate (3-out-of-3)', async () => {
     const shares = secretSharing.share(secret, 3, 3)
-    const updates = secretSharing.proactivate(3, 3, shares[0].subarray(24, 32))
+    const updates = secretSharing.proactivate(
+      3,
+      3,
+      shares.map((e) => e.subarray(0, 8)),
+    )
     const proactiveShares = shares.map((share, i) =>
       secretSharing.merge(share, updates[i]),
     )
@@ -234,7 +277,10 @@ describe('Threshold Signature Scheme in BE', function () {
   it('n-extension (3-out-of-3)', async () => {
     const shares = secretSharing.share(secret, 3, 3)
     const r = secretSharing.ff.rand()
-    const rs = secretSharing.share(r, 3, 4)
+    const rs = secretSharing.share(r, 3, 4, [
+      ...shares.map((e) => e.subarray(0, 8)),
+      randomBytes(8),
+    ])
     const zs = shares.map((share, i) =>
       concatBytes(
         share.subarray(0, 32),
@@ -242,17 +288,18 @@ describe('Threshold Signature Scheme in BE', function () {
       ),
     )
     const rk = rs[rs.length - 1]
-    const zk = secretSharing.interpolate(
-      secretSharing.ff.decode(secretSharing.ff.numberToRedBN(4), 8),
-      zs,
-    )
+    const zk = secretSharing.interpolate(rk.subarray(0, 8), zs)
     shares.push(
       concatBytes(
         rk.subarray(0, 32),
         secretSharing.ff.sub(zk, rk.subarray(32)),
       ),
     )
-    const updates = secretSharing.proactivate(3, 4)
+    const updates = secretSharing.proactivate(
+      3,
+      4,
+      shares.map((e) => e.subarray(0, 8)),
+    )
     const proactiveShares = shares.map((share, i) =>
       secretSharing.merge(share, updates[i]),
     )
@@ -260,9 +307,15 @@ describe('Threshold Signature Scheme in BE', function () {
     expect(key).to.deep.equals(secret)
   })
 
-  it('n-shrink (3-out-of-4)', async () => {
+  it('n-reduction (3-out-of-4)', async () => {
     const shares = secretSharing.share(secret, 3, 4)
-    const updates = secretSharing.proactivate(3, 3)
+    const updates = secretSharing.proactivate(
+      3,
+      3,
+      shares
+        .filter((_, i) => i !== shares.length - 1)
+        .map((e) => e.subarray(0, 8)),
+    )
     const proactiveShares = updates.map((update, i) =>
       secretSharing.merge(shares[i], update),
     )
@@ -272,7 +325,11 @@ describe('Threshold Signature Scheme in BE', function () {
 
   it('t-extension (3-out-of-4)', async () => {
     const shares = secretSharing.share(secret, 3, 4)
-    const updates = secretSharing.proactivate(4, 4)
+    const updates = secretSharing.proactivate(
+      4,
+      4,
+      shares.map((e) => e.subarray(0, 8)),
+    )
     const proactiveShares = updates.map((update, i) =>
       secretSharing.merge(shares[i], update),
     )
@@ -280,10 +337,15 @@ describe('Threshold Signature Scheme in BE', function () {
     expect(key).to.deep.equals(secret)
   })
 
-  it('t-shrink (3-out-of-3)', async () => {
+  it('t-reduction (3-out-of-3)', async () => {
     const shares = secretSharing.share(secret, 3, 3)
     const r = secretSharing.ff.rand()
-    const rs = secretSharing.share(r, 2, 3)
+    const rs = secretSharing.share(
+      r,
+      2,
+      3,
+      shares.map((e) => e.subarray(0, 8)),
+    )
     const zs = shares.map((share, i) =>
       concatBytes(
         share.subarray(0, 32),
@@ -308,7 +370,11 @@ describe('Threshold Signature Scheme in BE', function () {
         ),
       )
     })
-    const updates = secretSharing.proactivate(2, 3)
+    const updates = secretSharing.proactivate(
+      2,
+      3,
+      updatedShares.map((e) => e.subarray(0, 8)),
+    )
     const proactiveShares = updatedShares.map((share, i) =>
       secretSharing.merge(share, updates[i]),
     )
