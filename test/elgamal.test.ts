@@ -9,7 +9,7 @@ describe('ElGamal Encryption: eddsa', function () {
   const pubkey = EdCurve.getPublicKey(privkey)
 
   it('encrypt/decrypt', async () => {
-    const msg = EdCurve.ff.norm(edUtils.randomBytes(32))
+    const msg = EdCurve.ff.rand()
     const c = elgamal.encrypt(msg, pubkey)
     const m = elgamal.decrypt(c, privkey)
     expect(msg).to.deep.equal(m)
@@ -22,7 +22,7 @@ describe('ElGamal Encryption: ecdsa', function () {
   const pubkey = ECCurve.getPublicKey(privkey)
 
   it('encrypt/decrypt', async () => {
-    const msg = EdCurve.ff.norm(ecUtils.randomBytes(32))
+    const msg = ECCurve.ff.rand()
     const c = elgamal.encrypt(msg, pubkey)
     const m = elgamal.decrypt(c, privkey)
     expect(msg).to.deep.equal(m)

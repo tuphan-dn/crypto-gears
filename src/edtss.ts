@@ -10,6 +10,15 @@ import { FiniteField } from './ff'
 export class EdCurve {
   static ff = FiniteField.fromBigInt(CURVE.n, 'le')
 
+  static validate = (point: Uint8Array): boolean => {
+    try {
+      Point.fromHex(point)
+      return true
+    } catch (er) {
+      return false
+    }
+  }
+
   static baseMul = (r: Uint8Array) => {
     const b = BigInt(new BN(r, 16, this.ff.en).toString())
     return Point.BASE.multiply(b).toRawBytes()
