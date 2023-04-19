@@ -1,5 +1,4 @@
 import { getPublicKey, utils } from '@noble/secp256k1'
-import BN from 'bn.js'
 import { expect } from 'chai'
 import { ECTSS, SecretSharing } from '../dist'
 import { msg } from './utils'
@@ -18,8 +17,12 @@ describe('ECTSS', () => {
     const sharedKeys = secretSharing.share(master, t, n)
     // Round 1
     const hashMsg = await utils.sha256(msg)
-    const { shares, R, z } = ECTSS.shareRandomness(t, n)
-    const Hz2 = ECTSS.ff.pow(ECTSS.ff.add(hashMsg, ECTSS.ff.neg(z)), 2) // (H-z)^2
+    const { shares, R, z } = ECTSS.shareRandomness(
+      t,
+      n,
+      sharedKeys.map((e) => e.subarray(0, 8)),
+    )
+    const Hz2 = ECTSS.ff.pow(ECTSS.ff.sub(hashMsg, z), 2) // (H-z)^2
     // Round 2
     const sharedSigs = sharedKeys
       .slice(0, t)
@@ -27,7 +30,7 @@ describe('ECTSS', () => {
         ECTSS.sign(R, shares[i].subarray(32), sharedKey.subarray(32)),
       )
     // Validate
-    const indice = [1, 2].map((i) => new BN(i).toArrayLike(Buffer, 'be', 8))
+    const indice = sharedKeys.slice(0, t).map((e) => e.subarray(0, 8))
     const pi = secretSharing.pi(indice)
     // Correct sig
     const correctSigs = sharedSigs.map((sharedSig, i) =>
@@ -49,8 +52,12 @@ describe('ECTSS', () => {
     const sharedKeys = secretSharing.share(master, t, n)
     // Round 1
     const hashMsg = await utils.sha256(msg)
-    const { shares, R, z } = ECTSS.shareRandomness(t, n)
-    const Hz2 = ECTSS.ff.pow(ECTSS.ff.add(hashMsg, ECTSS.ff.neg(z)), 2) // (H-z)^2
+    const { shares, R, z } = ECTSS.shareRandomness(
+      t,
+      n,
+      sharedKeys.map((e) => e.subarray(0, 8)),
+    )
+    const Hz2 = ECTSS.ff.pow(ECTSS.ff.sub(hashMsg, z), 2) // (H-z)^2
     // Round 2
     const sharedSigs = sharedKeys
       .slice(0, t)
@@ -58,7 +65,7 @@ describe('ECTSS', () => {
         ECTSS.sign(R, shares[i].subarray(32), sharedKey.subarray(32)),
       )
     // Validate
-    const indice = [1, 2].map((i) => new BN(i).toArrayLike(Buffer, 'be', 8))
+    const indice = sharedKeys.slice(0, t).map((e) => e.subarray(0, 8))
     const pi = secretSharing.pi(indice)
     // Correct sig
     const correctSigs = sharedSigs.map((sharedSig, i) =>

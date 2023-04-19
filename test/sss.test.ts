@@ -120,9 +120,7 @@ describe('Threshold Signature Scheme in LE', function () {
     const updates = secretSharing.proactivate(
       3,
       3,
-      shares
-        .filter((_, i) => i !== shares.length - 1)
-        .map((e) => e.subarray(0, 8)),
+      shares.slice(0, 3).map((e) => e.subarray(0, 8)),
     )
     const proactiveShares = updates.map((update, i) =>
       secretSharing.merge(shares[i], update),
@@ -312,9 +310,7 @@ describe('Threshold Signature Scheme in BE', function () {
     const updates = secretSharing.proactivate(
       3,
       3,
-      shares
-        .filter((_, i) => i !== shares.length - 1)
-        .map((e) => e.subarray(0, 8)),
+      shares.slice(0, 3).map((e) => e.subarray(0, 8)),
     )
     const proactiveShares = updates.map((update, i) =>
       secretSharing.merge(shares[i], update),

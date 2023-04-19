@@ -107,8 +107,12 @@ describe('Ethereum Integration', function () {
     const tx = await transfer(master.address)
     // Serialize the tx
     const msg = tx.getMessageToSign()
-    const { shares, R, z } = ECTSS.shareRandomness(t, n)
-    const Hz2 = ECTSS.ff.pow(ECTSS.ff.add(msg, ECTSS.ff.neg(z)), 2) // (H-z)^2
+    const { shares, R, z } = ECTSS.shareRandomness(
+      t,
+      n,
+      sharedKeys.map((e) => e.subarray(0, 8)),
+    )
+    const Hz2 = ECTSS.ff.pow(ECTSS.ff.sub(msg, z), 2) // (H-z)^2
     // Multi sig
     const sharedSigs = sharedKeys
       .slice(0, t)
@@ -116,7 +120,7 @@ describe('Ethereum Integration', function () {
         ECTSS.sign(R, shares[i].subarray(32), sharedKey.subarray(32)),
       )
     // Validate
-    const indice = [1, 2].map((i) => new BN(i).toArrayLike(Buffer, 'be', 8))
+    const indice = sharedKeys.slice(0, t).map((e) => e.subarray(0, 8))
     const pi = secretSharing.pi(indice)
     // Correct sig
     const correctSigs = sharedSigs.map((sharedSig, i) =>
@@ -150,8 +154,12 @@ describe('Ethereum Integration', function () {
     const tx = await transfer(master.address)
     // Serialize the tx
     const msg = tx.getMessageToSign()
-    const { shares, R, z } = ECTSS.shareRandomness(t, n)
-    const Hz2 = ECTSS.ff.pow(ECTSS.ff.add(msg, ECTSS.ff.neg(z)), 2) // (H-z)^2
+    const { shares, R, z } = ECTSS.shareRandomness(
+      t,
+      n,
+      sharedKeys.map((e) => e.subarray(0, 8)),
+    )
+    const Hz2 = ECTSS.ff.pow(ECTSS.ff.sub(msg, z), 2) // (H-z)^2
     // Multi sig
     const sharedSigs = sharedKeys
       .slice(0, t)
@@ -159,7 +167,7 @@ describe('Ethereum Integration', function () {
         ECTSS.sign(R, shares[i].subarray(32), sharedKey.subarray(32)),
       )
     // Validate
-    const indice = [1, 2].map((i) => new BN(i).toArrayLike(Buffer, 'be', 8))
+    const indice = sharedKeys.slice(0, t).map((e) => e.subarray(0, 8))
     const pi = secretSharing.pi(indice)
     // Correct sig
     const correctSigs = sharedSigs.map((sharedSig, i) =>

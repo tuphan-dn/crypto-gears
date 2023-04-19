@@ -66,10 +66,10 @@ export class EdTSS {
   static publicKeyLength = 32
   static randomnessLength = 32
 
-  static shareRandomness = (t: number, n: number) => {
+  static shareRandomness = (t: number, n: number, indice: Uint8Array[]) => {
     const r = this.ff.norm(utils.randomBytes(EdTSS.randomnessLength))
     const secretSharing = new SecretSharing(this.ff)
-    const shares = secretSharing.share(r, t, n)
+    const shares = secretSharing.share(r, t, n, indice)
     const R = EdCurve.baseMul(r)
     return { shares, R }
   }

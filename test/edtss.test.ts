@@ -19,7 +19,11 @@ describe('EdTSS', function () {
     const sharedKeys = secretSharing.share(derivedKey, t, n)
 
     // Round 1
-    const { shares, R } = EdTSS.shareRandomness(t, n)
+    const { shares, R } = EdTSS.shareRandomness(
+      t,
+      n,
+      sharedKeys.map((e) => e.subarray(0, 8)),
+    )
     // Round 2
     const sharedSigs = sharedKeys
       .slice(0, t)
@@ -33,7 +37,7 @@ describe('EdTSS', function () {
         ),
       )
     // Validate
-    const indice = [1, 2].map((i) => new BN(i).toArrayLike(Buffer, 'le', 8))
+    const indice = sharedKeys.map((e) => e.subarray(0, 8))
     const pi = secretSharing.pi(indice)
     // Correct sig
     const correctSigs = sharedSigs.map((sharedSig, i) =>
@@ -57,7 +61,11 @@ describe('EdTSS', function () {
     // Key generation
     const sharedKeys = secretSharing.share(derivedKey, t, n)
     // Round 1
-    const { shares, R } = EdTSS.shareRandomness(t, n)
+    const { shares, R } = EdTSS.shareRandomness(
+      t,
+      n,
+      sharedKeys.map((e) => e.subarray(0, 8)),
+    )
     // Round 2
     const sharedSigs = sharedKeys
       .slice(0, t)
@@ -71,7 +79,9 @@ describe('EdTSS', function () {
         ),
       )
     // Validate
-    const indice = [1, 2].map((i) => new BN(i).toArrayLike(Buffer, 'le', 8))
+    const indice = sharedKeys
+      .filter((_, i) => i !== sharedKeys.length - 1)
+      .map((e) => e.subarray(0, 8))
     const pi = secretSharing.pi(indice)
     // Correct sig
     const correctSigs = sharedSigs.map((sharedSig, i) =>

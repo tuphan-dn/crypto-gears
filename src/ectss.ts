@@ -81,11 +81,11 @@ export class ECTSS {
     return recovery
   }
 
-  static shareRandomness = (t: number, n: number) => {
+  static shareRandomness = (t: number, n: number, indice: Uint8Array[]) => {
     const r = this.ff.norm(utils.randomBytes(this.randomnessLength))
     const z = this.ff.inv(r)
     const secretSharing = new SecretSharing(this.ff)
-    const shares = secretSharing.share(z, t, n)
+    const shares = secretSharing.share(z, t, n, indice)
     const R = ECCurve.baseMul(r)
     return { shares, R, z }
   }

@@ -78,7 +78,11 @@ describe('Solana Interaction', function () {
     const tx = await transfer(master.publicKey)
     // Serialize the tx
     const msg = tx.serializeMessage()
-    const { shares, R } = EdTSS.shareRandomness(t, n)
+    const { shares, R } = EdTSS.shareRandomness(
+      t,
+      n,
+      sharedKeys.map((e) => e.subarray(0, 8)),
+    )
     // Multi sig
     const sharedSigs = sharedKeys
       .slice(0, t)
@@ -92,7 +96,7 @@ describe('Solana Interaction', function () {
         ),
       )
     // Correct sig
-    const indice = [1, 2].map((i) => new BN(i).toArrayLike(Buffer, 'le', 8))
+    const indice = sharedKeys.slice(0, t).map((e) => e.subarray(0, 8))
     const pi = secretSharing.pi(indice)
     const correctSigs = sharedSigs.map((sharedSig, i) =>
       utils.concatBytes(
@@ -118,7 +122,11 @@ describe('Solana Interaction', function () {
     const tx = await transfer(master.publicKey)
     // Serialize the tx
     const msg = tx.serializeMessage()
-    const { shares, R } = EdTSS.shareRandomness(t, n)
+    const { shares, R } = EdTSS.shareRandomness(
+      t,
+      n,
+      sharedKeys.map((e) => e.subarray(0, 8)),
+    )
     // Multi sig
     const sharedSigs = sharedKeys
       .slice(0, t)
@@ -132,7 +140,7 @@ describe('Solana Interaction', function () {
         ),
       )
     // Correct sig
-    const indice = [1, 2].map((i) => new BN(i).toArrayLike(Buffer, 'le', 8))
+    const indice = sharedKeys.slice(0, t).map((e) => e.subarray(0, 8))
     const pi = secretSharing.pi(indice)
     const correctSigs = sharedSigs.map((sharedSig, i) =>
       utils.concatBytes(
