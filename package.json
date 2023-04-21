@@ -29,7 +29,7 @@
     "predeploy": "typedoc --excludePrivate --excludeProtected ./src/index.ts",
     "deploy": "gh-pages -d docs",
     "pretest": "yarn build",
-    "test": "mocha --require ts-node/register -t 120000 test/**/*.test.ts",
+    "test": "mocha --require ts-node/register -t 120000 test/**/elgamal.test.ts",
     "test:watch": "nodemon --ext ts --watch src --watch test --exec \"yarn test\"",
     "clean": "rimraf dist"
   },

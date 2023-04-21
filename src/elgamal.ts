@@ -1,6 +1,6 @@
 import { randomBytes } from '@noble/hashes/utils'
 import type { ECCurve } from './ectss'
-import type { EdCurve } from './edtss'
+import { EdCurve } from './edtss'
 
 /**
  * Remove the recovery bit in case of secp256k1
@@ -73,6 +73,7 @@ export class ElGamal {
 }
 
 /**
+ * ONLY SUPPORT ED25519
  * The encryption is block stream. Each block has length of 32.
  * The first byte is to bit parity
  * The second byte is to length
@@ -87,7 +88,7 @@ export class ExtendedElGamal {
   static plainTextLength = 30
   static cipherTextLength = 64
 
-  constructor(public readonly curve: typeof ECCurve | typeof EdCurve) {}
+  constructor() {}
 
   private _enc = (msg: Uint8Array, pubkey: Uint8Array): Uint8Array => {
     const length = msg.length
@@ -95,15 +96,12 @@ export class ExtendedElGamal {
       throw new Error(
         `Invalid block length. It must be 30 bytes instead of ${length} bytes.`,
       )
-    const pr = parity(msg)
+    const par = parity(msg)
     const padding = randomBytes(ExtendedElGamal.plainTextLength - length)
-    const m =
-      this.curve.ff.en === 'le'
-        ? new Uint8Array([pr, length, ...padding, ...msg])
-        : new Uint8Array([...msg, ...padding, length, pr])
-    const r = this.curve.ff.rand()
-    const R = trim(this.curve.baseMul(r))
-    const s = trim(this.curve.mulScalar(pubkey, r))
+    const m = new Uint8Array([par, length, ...padding, ...msg])
+    const r = EdCurve.ff.rand()
+    const R = trim(EdCurve.baseMul(r))
+    const s = trim(EdCurve.mulScalar(pubkey, r))
     const c = xor(m, s)
     return new Uint8Array([...R, ...c])
   }
@@ -115,23 +113,15 @@ export class ExtendedElGamal {
       throw new Error('Invalid cipher text length')
     const R = cipher.subarray(0, 32)
     const c = cipher.subarray(32, ExtendedElGamal.cipherTextLength)
-    const s = trim(this.curve.mulScalar(R, privkey))
+    const s = trim(EdCurve.mulScalar(R, privkey))
     const p = xor(c, s)
-    const [pr, length] =
-      this.curve.ff.en === 'le'
-        ? [p[0], p[1]]
-        : [
-            p[ExtendedElGamal.blockLength - 1],
-            p[ExtendedElGamal.blockLength - 2],
-          ]
-    const msg =
-      this.curve.ff.en === 'le'
-        ? p.subarray(
-            ExtendedElGamal.blockLength - length,
-            ExtendedElGamal.blockLength,
-          )
-        : p.subarray(0, length)
-    if (pr !== parity(msg)) throw new Error('Incorrect cipher text')
+    const par = p[0]
+    const length = p[1]
+    const msg = p.subarray(
+      ExtendedElGamal.blockLength - length,
+      ExtendedElGamal.blockLength,
+    )
+    if (par !== parity(msg)) throw new Error('Incorrect cipher text')
     return msg
   }
 
@@ -150,8 +140,8 @@ export class ExtendedElGamal {
     return new Uint8Array(c.flat())
   }
 
-  decrypt = async (c: Uint8Array, privkey: Uint8Array): Promise<Uint8Array> => {
-    const priv = this.curve.getDerivedKey(privkey)
+  decrypt = (c: Uint8Array, privkey: Uint8Array): Uint8Array => {
+    const priv = EdCurve.getDerivedKey(privkey)
     let m = []
     let offset = 0
     while (offset < c.length) {
