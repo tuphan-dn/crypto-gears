@@ -1,17 +1,5 @@
 import { randomBytes } from '@noble/hashes/utils'
-import type { ECCurve } from './ectss'
 import { EdCurve } from './edtss'
-
-/**
- * Remove the recovery bit in case of secp256k1
- * @param s The compressed point
- * @returns Trimmed `s`
- */
-export const trim = (s: Uint8Array) => {
-  const offset = s.length - ExtendedElGamal.publicKeyLength
-  if (offset < 0) throw new Error('Invalid public key length')
-  return s.subarray(offset)
-}
 
 export const xor = (a: Uint8Array, b: Uint8Array): Uint8Array => {
   if (a.length !== b.length) throw new Error('Invalid buffer length')
@@ -29,8 +17,8 @@ export const parity = (a: Uint8Array) => {
 }
 
 /**
- * This specific lib to encrypt/decrypt eddsa and ecdsa privkey only.
- * If you would like to encrypt arbitrarily messages, let's try ExtendedElgamal
+ * This specific lib to encrypt/decrypt arbitrary fixed-length 32-bytes data.
+ * If you would like to encrypt arbitrary message lengths, let's try ExtendedElgamal
  */
 
 export class ElGamal {
@@ -39,22 +27,18 @@ export class ElGamal {
   static plainTextLength = 32
   static cipherTextLength = 64
 
-  constructor(public readonly curve: typeof ECCurve | typeof EdCurve) {}
-
   encrypt = (msg: Uint8Array, pubkey: Uint8Array): Uint8Array => {
-    if (msg.length > ElGamal.plainTextLength)
+    if (msg.length != ElGamal.plainTextLength)
       throw new Error(
         `Invalid block length. It must be 30 bytes instead of ${msg.length} bytes.`,
       )
-    if (this.curve.ff.equal(msg, this.curve.ff.norm(msg)) !== 0)
-      throw new Error(
-        `Invalid messsage. The message must be less than or equal to ${this.curve.ff.r}.`,
-      )
-    const m = this.curve.ff.norm(msg)
-    const r = this.curve.ff.rand()
-    const R = trim(this.curve.baseMul(r))
-    const s = trim(this.curve.mulScalar(pubkey, r))
-    const c = this.curve.ff.add(m, s)
+    const r = EdCurve.ff.rand()
+    const R = EdCurve.baseMul(r)
+    const m = xor(msg, R)
+    if (EdCurve.ff.equal(m, EdCurve.ff.norm(m)) !== 0)
+      return this.encrypt(msg, pubkey)
+    const s = EdCurve.mulScalar(pubkey, r)
+    const c = EdCurve.ff.add(m, s)
     return new Uint8Array([...R, ...c])
   }
 
@@ -63,12 +47,13 @@ export class ElGamal {
       throw new Error('Invalid private key length')
     if (cipher.length !== ElGamal.cipherTextLength)
       throw new Error('Invalid cipher text length')
-    const priv = this.curve.getDerivedKey(privkey)
+    const priv = EdCurve.getDerivedKey(privkey)
     const R = cipher.subarray(0, 32)
     const c = cipher.subarray(32, ElGamal.cipherTextLength)
-    const s = trim(this.curve.mulScalar(R, priv))
-    const m = this.curve.ff.sub(c, s)
-    return m
+    const s = EdCurve.mulScalar(R, priv)
+    const m = EdCurve.ff.sub(c, s)
+    const msg = xor(m, R)
+    return msg
   }
 }
 
@@ -100,8 +85,8 @@ export class ExtendedElGamal {
     const padding = randomBytes(ExtendedElGamal.plainTextLength - length)
     const m = new Uint8Array([par, length, ...padding, ...msg])
     const r = EdCurve.ff.rand()
-    const R = trim(EdCurve.baseMul(r))
-    const s = trim(EdCurve.mulScalar(pubkey, r))
+    const R = EdCurve.baseMul(r)
+    const s = EdCurve.mulScalar(pubkey, r)
     const c = xor(m, s)
     return new Uint8Array([...R, ...c])
   }
@@ -113,7 +98,7 @@ export class ExtendedElGamal {
       throw new Error('Invalid cipher text length')
     const R = cipher.subarray(0, 32)
     const c = cipher.subarray(32, ExtendedElGamal.cipherTextLength)
-    const s = trim(EdCurve.mulScalar(R, privkey))
+    const s = EdCurve.mulScalar(R, privkey)
     const p = xor(c, s)
     const par = p[0]
     const length = p[1]
