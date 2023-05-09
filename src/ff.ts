@@ -128,5 +128,5 @@ export class FiniteField {
    * @param b
    * @returns 0: a=b | 1: a>b | -1: a<b
    */
-  equal = (a: Uint8Array, b: Uint8Array) => Buffer.compare(a, b)
+  equal = (a: Uint8Array, b: Uint8Array) => this.encode(a).eq(this.encode(b))
 }

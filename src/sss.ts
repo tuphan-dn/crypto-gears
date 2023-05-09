@@ -8,7 +8,7 @@
  * - The tuple (t,n,id) must be identical to all shares in a same group
  */
 
-import { concatBytes, randomBytes } from '@noble/hashes/utils'
+import { bytesToHex, concatBytes, randomBytes } from '@noble/hashes/utils'
 import { FiniteField } from './ff'
 
 export type ExtractedShare = {
@@ -22,7 +22,7 @@ export type ExtractedShare = {
 const allEqual = (arr: Uint8Array[]): boolean => {
   if (!arr) return true
   const [a, ...rest] = arr
-  const index = rest.findIndex((b) => Buffer.compare(a, b) !== 0)
+  const index = rest.findIndex((b) => bytesToHex(a) === bytesToHex(b))
   return index < 0
 }
 

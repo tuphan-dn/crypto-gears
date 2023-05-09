@@ -35,7 +35,7 @@ export class ElGamal {
     const r = EdCurve.ff.rand()
     const R = EdCurve.baseMul(r)
     const m = xor(msg, R)
-    if (EdCurve.ff.equal(m, EdCurve.ff.norm(m)) !== 0)
+    if (!EdCurve.ff.equal(m, EdCurve.ff.norm(m)))
       return this.encrypt(msg, pubkey)
     const s = EdCurve.mulScalar(pubkey, r)
     const c = EdCurve.ff.add(m, s)
