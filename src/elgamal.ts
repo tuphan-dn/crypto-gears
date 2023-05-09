@@ -1,4 +1,4 @@
-import { randomBytes } from '@noble/hashes/utils'
+import { bytesToHex, randomBytes } from '@noble/hashes/utils'
 import { EdCurve } from './edtss'
 
 export const xor = (a: Uint8Array, b: Uint8Array): Uint8Array => {
@@ -35,7 +35,7 @@ export class ElGamal {
     const r = EdCurve.ff.rand()
     const R = EdCurve.baseMul(r)
     const m = xor(msg, R)
-    if (!EdCurve.ff.equal(m, EdCurve.ff.norm(m)))
+    if (bytesToHex(m) !== bytesToHex(EdCurve.ff.norm(m)))
       return this.encrypt(msg, pubkey)
     const s = EdCurve.mulScalar(pubkey, r)
     const c = EdCurve.ff.add(m, s)
