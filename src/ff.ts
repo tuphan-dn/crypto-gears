@@ -1,5 +1,5 @@
 import BN, { ReductionContext } from 'bn.js'
-import { utils } from '@noble/ed25519'
+import { randomBytes } from '@noble/hashes/utils'
 
 export type RedBN = ReturnType<BN['toRed']>
 
@@ -49,7 +49,7 @@ export class FiniteField {
    * Randomize
    * @returns
    */
-  rand = () => this.norm(utils.randomBytes(32))
+  rand = () => this.norm(randomBytes(32))
 
   /**
    * Add 2 numbers
