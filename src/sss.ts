@@ -22,7 +22,7 @@ export type ExtractedShare = {
 const allEqual = (arr: Uint8Array[]): boolean => {
   if (!arr) return true
   const [a, ...rest] = arr
-  const index = rest.findIndex((b) => bytesToHex(a) === bytesToHex(b))
+  const index = rest.findIndex((b) => bytesToHex(a) !== bytesToHex(b))
   return index < 0
 }
 
