@@ -91,11 +91,10 @@ export class ECTSS {
     const r = this.ff.norm(
       !seed ? utils.randomBytes(this.randomnessLength) : keccak_256(seed),
     )
-    const z = this.ff.inv(r)
     const secretSharing = new SecretSharing(this.ff)
-    const shares = secretSharing.share(z, t, n, indice)
+    const shares = secretSharing.share(r, t, n, indice)
     const R = ECCurve.baseMul(r)
-    return { shares, R, z }
+    return { shares, R, r }
   }
 
   /**

@@ -79,7 +79,7 @@ export class EdTSS {
     const secretSharing = new SecretSharing(this.ff)
     const shares = secretSharing.share(r, t, n, indice)
     const R = EdCurve.baseMul(r)
-    return { shares, R }
+    return { shares, R, r }
   }
 
   /**
