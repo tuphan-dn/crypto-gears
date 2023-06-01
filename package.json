@@ -1,7 +1,7 @@
 {
   "name": "@desig/core",
-  "version": "0.2.8",
-  "description": "Desig: The Blockchain-Agnostic Multisig Solution",
+  "version": "0.2.9",
+  "description": "Desig: The Blockchain-Agnostic Multisig Solution.",
   "homepage": "https://core.desig.io/",
   "keywords": [
     "sss",
