@@ -6,6 +6,7 @@ import {
   verify,
   getPublicKey,
 } from '@noble/secp256k1'
+import { keccak_256 } from '@noble/hashes/sha3'
 import BN from 'bn.js'
 import { SecretSharing } from './sss'
 import { FiniteField } from './ff'
@@ -81,8 +82,15 @@ export class ECTSS {
     return recovery
   }
 
-  static shareRandomness = (t: number, n: number, indice: Uint8Array[]) => {
-    const r = this.ff.norm(utils.randomBytes(this.randomnessLength))
+  static shareRandomness = (
+    t: number,
+    n: number,
+    indice: Uint8Array[],
+    seed?: Uint8Array,
+  ) => {
+    const r = this.ff.norm(
+      !seed ? utils.randomBytes(this.randomnessLength) : keccak_256(seed),
+    )
     const z = this.ff.inv(r)
     const secretSharing = new SecretSharing(this.ff)
     const shares = secretSharing.share(z, t, n, indice)

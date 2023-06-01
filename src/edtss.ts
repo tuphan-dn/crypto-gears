@@ -1,5 +1,6 @@
 import { CURVE, Point, utils, verify } from '@noble/ed25519'
 import { sha512 } from '@noble/hashes/sha512'
+import { keccak_256 } from '@noble/hashes/sha3'
 import BN from 'bn.js'
 import { SecretSharing } from './sss'
 import { FiniteField } from './ff'
@@ -66,8 +67,15 @@ export class EdTSS {
   static publicKeyLength = 32
   static randomnessLength = 32
 
-  static shareRandomness = (t: number, n: number, indice: Uint8Array[]) => {
-    const r = this.ff.norm(utils.randomBytes(EdTSS.randomnessLength))
+  static shareRandomness = (
+    t: number,
+    n: number,
+    indice: Uint8Array[],
+    seed?: Uint8Array,
+  ) => {
+    const r = this.ff.norm(
+      !seed ? utils.randomBytes(EdTSS.randomnessLength) : keccak_256(seed),
+    )
     const secretSharing = new SecretSharing(this.ff)
     const shares = secretSharing.share(r, t, n, indice)
     const R = EdCurve.baseMul(r)
