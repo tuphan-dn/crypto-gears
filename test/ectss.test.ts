@@ -10,34 +10,35 @@ describe('ECTSS', () => {
   it('2-out-of-2 sign/verify', async () => {
     // Setup
     const publicKey = getPublicKey(master, true)
-    const P2 = ECTSS.ff.pow(master, 2)
     const t = 2
     const n = 2
     // Key generation
     const sharedKeys = secretSharing.share(master, t, n)
     // Round 1
     const hashMsg = await utils.sha256(msg)
-    const { shares, R, z } = ECTSS.shareRandomness(
+    const { shares, R, r } = ECTSS.shareRandomness(
       t,
       n,
       sharedKeys.map((e) => e.subarray(0, 8)),
     )
-    const Hz2 = ECTSS.ff.pow(ECTSS.ff.sub(hashMsg, z), 2) // (H-z)^2
     // Round 2
     const sharedSigs = sharedKeys
       .slice(0, t)
       .map((sharedKey, i) =>
-        ECTSS.sign(R, shares[i].subarray(32), sharedKey.subarray(32)),
+        ECTSS.sign(hashMsg, R, shares[i].subarray(32), sharedKey.subarray(32)),
       )
     // Validate
     const indice = sharedKeys.slice(0, t).map((e) => e.subarray(0, 8))
     const pi = secretSharing.pi(indice)
     // Correct sig
     const correctSigs = sharedSigs.map((sharedSig, i) =>
-      secretSharing.yl(sharedSig, pi[i]),
+      utils.concatBytes(
+        sharedSig.subarray(0, 33),
+        secretSharing.yl(sharedSig.subarray(33), pi[i]),
+      ),
     )
     // Combine sigs
-    const [sig] = ECTSS.addSig(correctSigs, hashMsg, R, P2, Hz2)
+    const [sig] = ECTSS.addSig(correctSigs, r)
     const ok = await ECTSS.verify(hashMsg, sig, publicKey)
     expect(ok).is.true
   })
@@ -45,34 +46,35 @@ describe('ECTSS', () => {
   it('2-out-of-3 sign/verify', async () => {
     // Setup
     const publicKey = getPublicKey(master, true)
-    const P2 = ECTSS.ff.pow(master, 2)
     const t = 2
     const n = 3
     // Key generation
     const sharedKeys = secretSharing.share(master, t, n)
     // Round 1
     const hashMsg = await utils.sha256(msg)
-    const { shares, R, z } = ECTSS.shareRandomness(
+    const { shares, R, r } = ECTSS.shareRandomness(
       t,
       n,
       sharedKeys.map((e) => e.subarray(0, 8)),
     )
-    const Hz2 = ECTSS.ff.pow(ECTSS.ff.sub(hashMsg, z), 2) // (H-z)^2
     // Round 2
     const sharedSigs = sharedKeys
       .slice(0, t)
       .map((sharedKey, i) =>
-        ECTSS.sign(R, shares[i].subarray(32), sharedKey.subarray(32)),
+        ECTSS.sign(hashMsg, R, shares[i].subarray(32), sharedKey.subarray(32)),
       )
     // Validate
     const indice = sharedKeys.slice(0, t).map((e) => e.subarray(0, 8))
     const pi = secretSharing.pi(indice)
     // Correct sig
     const correctSigs = sharedSigs.map((sharedSig, i) =>
-      secretSharing.yl(sharedSig, pi[i]),
+      utils.concatBytes(
+        sharedSig.subarray(0, 33),
+        secretSharing.yl(sharedSig.subarray(33), pi[i]),
+      ),
     )
     // Combine sigs
-    const [sig] = ECTSS.addSig(correctSigs, hashMsg, R, P2, Hz2)
+    const [sig] = ECTSS.addSig(correctSigs, r)
     const ok = await ECTSS.verify(hashMsg, sig, publicKey)
     expect(ok).is.true
   })

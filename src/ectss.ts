@@ -10,6 +10,7 @@ import { keccak_256 } from '@noble/hashes/sha3'
 import BN from 'bn.js'
 import { SecretSharing } from './sss'
 import { FiniteField } from './ff'
+import { concatBytes } from '@noble/hashes/utils'
 
 /**
  * ECCurve
@@ -63,6 +64,7 @@ export class ECCurve {
  */
 export class ECTSS {
   static ff = FiniteField.fromBigInt(CURVE.n, 'be')
+  static signatureLength = 65
   static randomnessLength = 32
   static privateKeyLength = 32
   static publicKeyLength = 33
@@ -95,7 +97,7 @@ export class ECTSS {
     const secretSharing = new SecretSharing(this.ff)
     const shares = secretSharing.share(x, t, n, indice)
     const R = ECCurve.baseMul(r)
-    return { shares, R, r, x }
+    return { shares, R, r }
   }
 
   /**
@@ -103,30 +105,22 @@ export class ECTSS {
    * @param sigs Partial signatures
    * @returns
    */
-  static addSig = (
-    sigs: Uint8Array[],
-    H: Uint8Array,
-    R: Uint8Array,
-    P2: Uint8Array,
-    Hz2: Uint8Array,
-  ): [Uint8Array, number] => {
+  static addSig = (sigs: Uint8Array[], r: Uint8Array): [Uint8Array, number] => {
+    const x = ECTSS.ff.norm(keccak_256(r))
+    const [R] = sigs.map((sig) => sig.subarray(0, 33))
     const Rx = ECTSS.ff.norm(R.subarray(1))
-    const y = sigs.reduce(
-      (sum, correctSig) => this.ff.add(sum, correctSig),
-      this.ff.decode(new BN(0)),
-    )
-    const H2 = this.ff.pow(H, 2)
-    const R2 = this.ff.pow(Rx, 2)
-    const s = this.ff.mul(
-      this.ff.add(
-        this.ff.add(this.ff.pow(y, 2), H2),
-        this.ff.neg(this.ff.add(this.ff.mul(R2, P2), Hz2)),
+    const ss = sigs.map((sig) => sig.subarray(33))
+    // Compute S
+    const S = this.ff.mul(
+      this.ff.inv(r),
+      this.ff.sub(
+        ss.reduce((sum, s) => this.ff.add(sum, s), this.ff.decode(new BN(0))),
+        x,
       ),
-      this.ff.inv(this.ff.decode(new BN(2))),
     )
     const sig = new Signature(
       BigInt(this.ff.encode(Rx).toString()),
-      BigInt(this.ff.encode(s).toString()),
+      BigInt(this.ff.encode(S).toString()),
     )
     const recovery = this.recoveryBit(R, sig)
     return [this.finalizeSig(sig), recovery]
@@ -134,25 +128,30 @@ export class ECTSS {
 
   /**
    * Partially signs the message by each holder
+   * @param msg Message
    * @param R Randomness
-   * @param z Shared inversed randomness
-   * @param privateKey Private key
+   * @param x Shared randomness
+   * @param derivedKey Derived key
    * @returns
    */
   static sign = (
     // Public
+    msg: Uint8Array,
     R: Uint8Array,
     // Private
-    z: Uint8Array,
-    privateKey: Uint8Array,
+    x: Uint8Array,
+    derivedKey: Uint8Array,
   ) => {
-    if (z.length !== this.randomnessLength)
+    if (x.length !== this.randomnessLength)
       throw new Error('bad randomness size')
-    if (privateKey.length !== ECTSS.privateKeyLength)
+    if (derivedKey.length !== ECTSS.privateKeyLength)
       throw new Error('bad private key size')
 
     const Rx = ECTSS.ff.norm(R.subarray(1))
-    return this.ff.add(z, this.ff.mul(Rx, privateKey))
+    return concatBytes(
+      R,
+      this.ff.add(this.ff.add(msg, this.ff.mul(Rx, derivedKey)), x),
+    )
   }
 
   /**

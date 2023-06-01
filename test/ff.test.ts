@@ -12,25 +12,25 @@ describe('Finite Field in LE', () => {
   it('add/neg', async () => {
     const x = ff.add(a, b)
     const y = ff.add(x, ff.neg(b))
-    expect(ff.equal(a, y)).to.equal(0)
+    expect(ff.equal(a, y)).to.true
   })
 
   it('mul/inv', async () => {
     const x = ff.mul(a, b)
     const y = ff.mul(x, ff.inv(b))
-    expect(ff.equal(a, y)).to.equal(0)
+    expect(ff.equal(a, y)).to.true
   })
 
   it('add/mul', async () => {
     const x = ff.add(a, a)
     const y = ff.mul(a, two)
-    expect(ff.equal(x, y)).to.equal(0)
+    expect(ff.equal(x, y)).to.true
   })
 
   it('mul/pow', async () => {
     const x = ff.mul(a, a)
     const y = ff.pow(a, 2)
-    expect(ff.equal(x, y)).to.equal(0)
+    expect(ff.equal(x, y)).to.true
   })
 })
 
@@ -43,24 +43,24 @@ describe('Finite Field in BE', () => {
   it('add/neg', async () => {
     const x = ff.add(a, b)
     const y = ff.add(x, ff.neg(b))
-    expect(ff.equal(a, y)).to.equal(0)
+    expect(ff.equal(a, y)).to.true
   })
 
   it('mul/inv', async () => {
     const x = ff.mul(a, b)
     const y = ff.mul(x, ff.inv(b))
-    expect(ff.equal(a, y)).to.equal(0)
+    expect(ff.equal(a, y)).to.true
   })
 
   it('add/mul', async () => {
     const x = ff.add(a, a)
     const y = ff.mul(a, two)
-    expect(ff.equal(x, y)).to.equal(0)
+    expect(ff.equal(x, y)).to.true
   })
 
   it('mul/pow', async () => {
     const x = ff.mul(a, a)
     const y = ff.pow(a, 2)
-    expect(ff.equal(x, y)).to.equal(0)
+    expect(ff.equal(x, y)).to.true
   })
 })

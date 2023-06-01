@@ -1,7 +1,6 @@
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { Transaction } from '@ethereumjs/tx'
-import { sign } from '@noble/secp256k1'
-import BN from 'bn.js'
+import { sign, utils } from '@noble/secp256k1'
 import Web3 from 'web3'
 import { ECTSS, SecretSharing } from '../dist'
 import { asyncWait, etherscan, print, priveth } from './utils'
@@ -83,14 +82,14 @@ describe('Ethereum Integration', function () {
       },
     )
     const chainId = tx.common.chainId()
-    const r = sig.slice(0, 32)
-    const s = Buffer.from(sig.slice(32, 64))
-    const v = BigInt(recv + 35) + chainId * BigInt(2)
+    const _r = sig.slice(0, 32)
+    const _s = Buffer.from(sig.slice(32, 64))
+    const _v = BigInt(recv + 35) + chainId * BigInt(2)
     const signedTx = Transaction.fromTxData({
       ...tx.toJSON(),
-      r: BigInt(web3.utils.bytesToHex([...r])),
-      s: BigInt(web3.utils.bytesToHex([...s])),
-      v,
+      r: BigInt(web3.utils.bytesToHex([..._r])),
+      s: BigInt(web3.utils.bytesToHex([..._s])),
+      v: _v,
     })
     const txId = await sendAndConfirm(signedTx)
     print(etherscan(txId))
@@ -101,42 +100,43 @@ describe('Ethereum Integration', function () {
     const n = 2
     // Setup
     const derivedKey = Buffer.from(web3.utils.hexToBytes(master.privateKey))
-    const P2 = ECTSS.ff.pow(derivedKey, 2)
     const sharedKeys = secretSharing.share(derivedKey, t, n)
     // Build the tx
     const tx = await transfer(master.address)
     // Serialize the tx
     const msg = tx.getMessageToSign()
-    const { shares, R, z } = ECTSS.shareRandomness(
+    const { shares, R, r } = ECTSS.shareRandomness(
       t,
       n,
       sharedKeys.map((e) => e.subarray(0, 8)),
     )
-    const Hz2 = ECTSS.ff.pow(ECTSS.ff.sub(msg, z), 2) // (H-z)^2
     // Multi sig
     const sharedSigs = sharedKeys
       .slice(0, t)
       .map((sharedKey, i) =>
-        ECTSS.sign(R, shares[i].subarray(32), sharedKey.subarray(32)),
+        ECTSS.sign(msg, R, shares[i].subarray(32), sharedKey.subarray(32)),
       )
     // Validate
     const indice = sharedKeys.slice(0, t).map((e) => e.subarray(0, 8))
     const pi = secretSharing.pi(indice)
     // Correct sig
     const correctSigs = sharedSigs.map((sharedSig, i) =>
-      secretSharing.yl(sharedSig, pi[i]),
+      utils.concatBytes(
+        sharedSig.subarray(0, 33),
+        secretSharing.yl(sharedSig.subarray(33), pi[i]),
+      ),
     )
     // Combine sigs
-    const [sig, recv] = ECTSS.addSig(correctSigs, msg, R, P2, Hz2)
+    const [sig, recv] = ECTSS.addSig(correctSigs, r)
     const chainId = tx.common.chainId()
-    const r = sig.slice(0, 32)
-    const s = Buffer.from(sig.slice(32, 64))
-    const v = BigInt(recv + 35) + chainId * BigInt(2)
+    const _r = sig.slice(0, 32)
+    const _s = Buffer.from(sig.slice(32, 64))
+    const _v = BigInt(recv + 35) + chainId * BigInt(2)
     const signedTx = Transaction.fromTxData({
       ...tx.toJSON(),
-      r: BigInt(web3.utils.bytesToHex([...r])),
-      s: BigInt(web3.utils.bytesToHex([...s])),
-      v,
+      r: BigInt(web3.utils.bytesToHex([..._r])),
+      s: BigInt(web3.utils.bytesToHex([..._s])),
+      v: _v,
     })
     // Send the tx
     const txId = await sendAndConfirm(signedTx)
@@ -148,42 +148,43 @@ describe('Ethereum Integration', function () {
     const n = 3
     // Setup
     const derivedKey = Buffer.from(web3.utils.hexToBytes(master.privateKey))
-    const P2 = ECTSS.ff.pow(derivedKey, 2)
     const sharedKeys = secretSharing.share(derivedKey, t, n)
     // Build the tx
     const tx = await transfer(master.address)
     // Serialize the tx
     const msg = tx.getMessageToSign()
-    const { shares, R, z } = ECTSS.shareRandomness(
+    const { shares, R, r } = ECTSS.shareRandomness(
       t,
       n,
       sharedKeys.map((e) => e.subarray(0, 8)),
     )
-    const Hz2 = ECTSS.ff.pow(ECTSS.ff.sub(msg, z), 2) // (H-z)^2
     // Multi sig
     const sharedSigs = sharedKeys
       .slice(0, t)
       .map((sharedKey, i) =>
-        ECTSS.sign(R, shares[i].subarray(32), sharedKey.subarray(32)),
+        ECTSS.sign(msg, R, shares[i].subarray(32), sharedKey.subarray(32)),
       )
     // Validate
     const indice = sharedKeys.slice(0, t).map((e) => e.subarray(0, 8))
     const pi = secretSharing.pi(indice)
     // Correct sig
     const correctSigs = sharedSigs.map((sharedSig, i) =>
-      secretSharing.yl(sharedSig, pi[i]),
+      utils.concatBytes(
+        sharedSig.subarray(0, 33),
+        secretSharing.yl(sharedSig.subarray(33), pi[i]),
+      ),
     )
     // Combine sigs
-    const [sig, recv] = ECTSS.addSig(correctSigs, msg, R, P2, Hz2)
+    const [sig, recv] = ECTSS.addSig(correctSigs, r)
     const chainId = tx.common.chainId()
-    const r = sig.slice(0, 32)
-    const s = Buffer.from(sig.slice(32, 64))
-    const v = BigInt(recv + 35) + chainId * BigInt(2)
+    const _r = sig.slice(0, 32)
+    const _s = Buffer.from(sig.slice(32, 64))
+    const _v = BigInt(recv + 35) + chainId * BigInt(2)
     const signedTx = Transaction.fromTxData({
       ...tx.toJSON(),
-      r: BigInt(web3.utils.bytesToHex([...r])),
-      s: BigInt(web3.utils.bytesToHex([...s])),
-      v,
+      r: BigInt(web3.utils.bytesToHex([..._r])),
+      s: BigInt(web3.utils.bytesToHex([..._s])),
+      v: _v,
     })
     // Send the tx
     const txId = await sendAndConfirm(signedTx)
