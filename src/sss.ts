@@ -11,7 +11,6 @@
 import { concatBytes, randomBytes } from '@noble/hashes/utils'
 import { FiniteField } from './ff'
 import { calcPolynomial, equal } from './utils'
-import BN from 'bn.js'
 
 export type ExtractedShare = {
   index: Uint8Array // 8 bytes

@@ -1,6 +1,6 @@
 {
   "name": "@desig/core",
-  "version": "0.3.1",
+  "version": "0.3.2",
   "description": "Desig: The Blockchain-Agnostic Multisig Solution.",
   "homepage": "https://core.desig.io/",
   "keywords": [
@@ -29,7 +29,7 @@
     "predeploy": "typedoc --excludePrivate --excludeProtected ./src/index.ts",
     "deploy": "gh-pages -d docs",
     "pretest": "yarn build",
-    "test": "mocha --require ts-node/register -t 120000 test/**/sss.test.ts",
+    "test": "mocha --require ts-node/register -t 120000 test/**/*.test.ts",
     "test:watch": "nodemon --ext ts --watch src --watch test --exec \"yarn test\"",
     "clean": "rimraf dist"
   },
