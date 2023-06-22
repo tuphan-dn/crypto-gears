@@ -1,6 +1,5 @@
 import { utils } from '@noble/ed25519'
 import { Keypair } from '@solana/web3.js'
-import BN from 'bn.js'
 import { expect } from 'chai'
 import { SecretSharing, EdTSS, EdCurve } from '../dist'
 import { msg } from './utils'

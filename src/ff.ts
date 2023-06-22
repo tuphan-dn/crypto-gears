@@ -1,7 +1,6 @@
 import BN, { ReductionContext } from 'bn.js'
 import { randomBytes } from '@noble/hashes/utils'
-
-export type RedBN = ReturnType<BN['toRed']>
+import { RedBN } from './utils'
 
 export class FiniteField {
   public readonly r: ReductionContext

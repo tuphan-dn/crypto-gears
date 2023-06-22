@@ -38,8 +38,8 @@ describe('Threshold Signature Scheme in LE', function () {
     expect(key).to.deep.equals(secret)
   })
 
-  it('500-out-of-500 share/reconstruct', async () => {
-    const shares = secretSharing.share(secret, 500, 500)
+  it('1000-out-of-1000 share/reconstruct', async () => {
+    const shares = secretSharing.share(secret, 1000, 1000)
     const key = secretSharing.construct(shares)
     expect(key).to.deep.equals(secret)
   })
@@ -228,8 +228,8 @@ describe('Threshold Signature Scheme in BE', function () {
     expect(key).to.deep.equals(secret)
   })
 
-  it('500-out-of-500 share/reconstruct', async () => {
-    const shares = secretSharing.share(secret, 500, 500)
+  it('1000-out-of-1000 share/reconstruct', async () => {
+    const shares = secretSharing.share(secret, 1000, 1000)
     const key = secretSharing.construct(shares)
     expect(key).to.deep.equals(secret)
   })
