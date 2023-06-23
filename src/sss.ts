@@ -11,6 +11,8 @@
 import { concatBytes, randomBytes } from '@noble/hashes/utils'
 import { FiniteField } from './ff'
 import { calcPolynomial, equal } from './utils'
+import { EdCurve } from './edtss'
+import { ECCurve } from './ectss'
 
 export type ExtractedShare = {
   index: Uint8Array // 8 bytes
@@ -151,15 +153,25 @@ export class SecretSharing {
    * @param key The secret (Must be less than `this.red`)
    * @param t The threshold
    * @param n The total number of shares
-   * @returns List of shares
+   * @param opts.indice Predefined indexes
+   * @param opts.id Predefined id
+   * @param opts.ec Elliptic Curve if you want to return the zk proofs
+   * @returns List of shares and zkps
    */
   share = (
     key: Uint8Array,
     t: number,
     n: number,
-    indice: Uint8Array[] = [],
-    id: Uint8Array = randomBytes(8),
-  ): Uint8Array[] => {
+    {
+      indice = [],
+      id = randomBytes(8),
+      ec,
+    }: {
+      indice?: Uint8Array[]
+      id?: Uint8Array
+      ec?: typeof EdCurve | typeof ECCurve
+    } = {},
+  ): { shares: Uint8Array[]; zkp?: Uint8Array[] } => {
     if (t < 1 || n < 1 || t > n) throw new Error('Invalid t-out-of-n format.')
     if (id && id.length !== 8)
       throw new Error('Id must be an 8-length bytes-like array.')
@@ -173,26 +185,38 @@ export class SecretSharing {
     // Compute shares
     const xs: Uint8Array[] = [...indice]
     while (xs.length < n) xs.push(randomBytes(8))
-    const shares = xs.map((x) => calcPolynomial(x, coefficients, this.ff))
-    return shares.map((s, i) => concatBytes(xs[i], T, N, ID, s))
+    const shares = xs
+      .map((x) => calcPolynomial(x, coefficients, this.ff))
+      .map((s, i) => concatBytes(xs[i], T, N, ID, s))
+    if (!ec) return { shares }
+    // Compute zk proofs
+    const zkp = coefficients.map((co) => ec.baseMul(co))
+    return { shares, zkp }
   }
 
   /**
    * Proactivate the shares
    * @param t The threshold
    * @param n The total number of shares
-   * @param id Next shares id
+   * @param indice The list of indexes
+   * @param opts.id Predefined next shares id
    * @returns List of next shares
    */
   proactivate = (
     t: number,
     n: number,
     indice: Uint8Array[],
-    id: Uint8Array = randomBytes(8),
+    {
+      id = randomBytes(8),
+      ec,
+    }: {
+      id?: Uint8Array
+      ec?: typeof EdCurve | typeof ECCurve
+    } = {},
   ) => {
     if (n !== indice.length) throw new Error('Not enough number of indexes.')
     const zero = this.ff.decode(this.ff.ZERO, 32)
-    const updates = this.share(zero, t, n, indice, id)
+    const updates = this.share(zero, t, n, { indice, id, ec })
     return updates
   }
 

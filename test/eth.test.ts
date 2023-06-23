@@ -100,7 +100,7 @@ describe('Ethereum Integration', function () {
     const n = 2
     // Setup
     const derivedKey = Buffer.from(web3.utils.hexToBytes(master.privateKey))
-    const sharedKeys = secretSharing.share(derivedKey, t, n)
+    const { shares: sharedKeys } = secretSharing.share(derivedKey, t, n)
     // Build the tx
     const tx = await transfer(master.address)
     // Serialize the tx
@@ -148,7 +148,7 @@ describe('Ethereum Integration', function () {
     const n = 3
     // Setup
     const derivedKey = Buffer.from(web3.utils.hexToBytes(master.privateKey))
-    const sharedKeys = secretSharing.share(derivedKey, t, n)
+    const { shares: sharedKeys } = secretSharing.share(derivedKey, t, n)
     // Build the tx
     const tx = await transfer(master.address)
     // Serialize the tx

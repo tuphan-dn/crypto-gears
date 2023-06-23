@@ -13,7 +13,7 @@ describe('ECTSS', () => {
     const t = 2
     const n = 2
     // Key generation
-    const sharedKeys = secretSharing.share(master, t, n)
+    const { shares: sharedKeys } = secretSharing.share(master, t, n)
     // Round 1
     const hashMsg = await utils.sha256(msg)
     const { shares, R, r } = ECTSS.shareRandomness(
@@ -49,7 +49,7 @@ describe('ECTSS', () => {
     const t = 2
     const n = 3
     // Key generation
-    const sharedKeys = secretSharing.share(master, t, n)
+    const { shares: sharedKeys } = secretSharing.share(master, t, n)
     // Round 1
     const hashMsg = await utils.sha256(msg)
     const { shares, R, r } = ECTSS.shareRandomness(

@@ -77,9 +77,12 @@ export class EdTSS {
       !seed ? utils.randomBytes(EdTSS.randomnessLength) : keccak_256(seed),
     )
     const secretSharing = new SecretSharing(this.ff)
-    const shares = secretSharing.share(r, t, n, indice)
+    const { shares, zkp } = secretSharing.share(r, t, n, {
+      indice,
+      ec: EdCurve,
+    })
     const R = EdCurve.baseMul(r)
-    return { shares, R, r }
+    return { shares, R, r, zkp }
   }
 
   /**

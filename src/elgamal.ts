@@ -17,6 +17,7 @@ export const parity = (a: Uint8Array) => {
 }
 
 /**
+ * ONLY SUPPORT ED25519
  * This specific lib to encrypt/decrypt arbitrary fixed-length 32-bytes data.
  * If you would like to encrypt arbitrary message lengths, let's try ExtendedElgamal
  */

@@ -15,7 +15,7 @@ describe('EdTSS', function () {
     const t = 2
     const n = 2
     // Key generation
-    const sharedKeys = secretSharing.share(derivedKey, t, n)
+    const { shares: sharedKeys } = secretSharing.share(derivedKey, t, n)
 
     // Round 1
     const { shares, R } = EdTSS.shareRandomness(
@@ -58,7 +58,7 @@ describe('EdTSS', function () {
     const t = 2
     const n = 3
     // Key generation
-    const sharedKeys = secretSharing.share(derivedKey, t, n)
+    const { shares: sharedKeys } = secretSharing.share(derivedKey, t, n)
     // Round 1
     const { shares, R } = EdTSS.shareRandomness(
       t,

@@ -73,7 +73,7 @@ describe('Solana Interaction', function () {
     const n = 2
     // Setup
     const derivedKey = EdCurve.getDerivedKey(master.secretKey)
-    const sharedKeys = secretSharing.share(derivedKey, t, n)
+    const { shares: sharedKeys } = secretSharing.share(derivedKey, t, n)
     // Build the tx
     const tx = await transfer(master.publicKey)
     // Serialize the tx
@@ -117,7 +117,7 @@ describe('Solana Interaction', function () {
     const n = 3
     // Setup
     const derivedKey = EdCurve.getDerivedKey(master.secretKey)
-    const sharedKeys = secretSharing.share(derivedKey, t, n)
+    const { shares: sharedKeys } = secretSharing.share(derivedKey, t, n)
     // Build the tx
     const tx = await transfer(master.publicKey)
     // Serialize the tx

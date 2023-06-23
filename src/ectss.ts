@@ -95,9 +95,12 @@ export class ECTSS {
     )
     const x = this.ff.norm(keccak_256(r))
     const secretSharing = new SecretSharing(this.ff)
-    const shares = secretSharing.share(x, t, n, indice)
+    const { shares, zkp } = secretSharing.share(x, t, n, {
+      indice,
+      ec: ECCurve,
+    })
     const R = ECCurve.baseMul(r)
-    return { shares, R, r }
+    return { shares, R, r, zkp }
   }
 
   /**
