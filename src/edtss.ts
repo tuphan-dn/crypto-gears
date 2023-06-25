@@ -4,6 +4,8 @@ import { keccak_256 } from '@noble/hashes/sha3'
 import BN from 'bn.js'
 import { SecretSharing } from './sss'
 import { FiniteField } from './ff'
+import { concatBytes } from '@noble/hashes/utils'
+import { equal } from './utils'
 
 /**
  * EdCurve
@@ -132,36 +134,66 @@ export class EdTSS {
     if (publicKey.length !== EdTSS.publicKeyLength)
       throw new Error('bad public key size')
 
-    const n = msg.length
-    const sm = new Uint8Array(64 + n)
-
-    // sm = [R,*,msg]
-    for (let i = 0; i < n; i++) sm[64 + i] = msg[i] // Assign M
-    for (let i = 0; i < 32; i++) sm[i] = R[i] // Assign R
-
-    // H(R,A,M)
-    for (let i = 0; i < 32; i++) sm[32 + i] = publicKey[i] // Assign A
-    const h = sha512(sm)
-    // s = r + H(R,A,M)a
+    // h = sha512(R || pub || msg)
+    const h = sha512(concatBytes(R, publicKey, msg))
+    // [s] = [r] + h * [priv]
     const s = this.ff.add(this.ff.mul(h, derivedKey), r)
-
-    // sm = [R,s,msg]
-    for (let i = 0; i < 32; i++) sm[32 + i] = s[i]
-
-    // sm = [rG,s,msg]
+    // [R] = [r]G
     const rG = EdCurve.baseMul(r)
-    for (let i = 0; i < 32; i++) sm[i] = rG[i]
-
-    return sm.subarray(0, EdTSS.signatureLength)
+    return concatBytes(rG, s)
   }
 
   /**
-   * Verify the message.
-   * It's identical to the ed25519 verification.
+   * Verify the commitment by zkp
+   * @param msg Message
+   * @param R Randomness
+   * @param publicKey Master public key
+   * @param index Signer id
+   * @param pzkp The zk proof of the private key
+   * @param rzkp The zk proof of the randomness
    */
-  static verify = async (
+  static verify = (
+    // Public
     msg: Uint8Array,
+    R: Uint8Array,
+    publicKey: Uint8Array,
+    index: Uint8Array,
+    // Witness
     sig: Uint8Array,
-    pubkey: Uint8Array,
-  ) => verify(sig, msg, pubkey)
+    pzkp: Uint8Array[],
+    rzkp: Uint8Array[],
+  ) => {
+    if (publicKey.length !== EdTSS.publicKeyLength)
+      throw new Error('bad public key size')
+    if (pzkp.length !== rzkp.length) throw new Error('bad proofs size')
+
+    const x = this.ff.decode(new BN(index, 8, this.ff.en))
+    // h = sha512(R || pub || msg)
+    const h = sha512(concatBytes(R, publicKey, msg))
+    // sig = [R] || [s]
+    const rG = sig.subarray(0, this.publicKeyLength)
+    const s = sig.subarray(this.publicKeyLength, this.signatureLength)
+    // _rG = rzkp[0] + rzkp[1] * index + rzkp[2] * index^2 + ...
+    const _rG = rzkp.reduce((sum, co, i) => {
+      const t = EdCurve.mulScalar(co, this.ff.pow(x, i))
+      if (!sum) return t
+      return EdCurve.addPoint(sum, t)
+    }, undefined)
+    if (!equal([_rG, rG])) return false
+    // [s]G = ([r] + h * [priv])G = [r]G + h * [priv]G
+    // [s]G = [r]G + h * (pzkp[0] + pzkp[1] * index + pzkp[2] * index^2 + ...)
+    const sG = EdCurve.baseMul(s)
+    const _sG = EdCurve.addPoint(
+      rG,
+      EdCurve.mulScalar(
+        pzkp.reduce((sum, co, i) => {
+          const t = EdCurve.mulScalar(co, this.ff.pow(x, i))
+          if (!sum) return t
+          return EdCurve.addPoint(sum, t)
+        }, undefined),
+        this.ff.norm(h),
+      ),
+    )
+    return equal([_sG, sG])
+  }
 }

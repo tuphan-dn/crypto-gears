@@ -1,6 +1,6 @@
-import { getPublicKey, utils } from '@noble/secp256k1'
+import { verify, getPublicKey, utils } from '@noble/secp256k1'
 import { expect } from 'chai'
-import { ECTSS, SecretSharing } from '../dist'
+import { ECCurve, ECTSS, SecretSharing } from '../dist'
 import { msg } from './utils'
 
 describe('ECTSS', () => {
@@ -13,10 +13,21 @@ describe('ECTSS', () => {
     const t = 2
     const n = 2
     // Key generation
-    const { shares: sharedKeys } = secretSharing.share(master, t, n)
+    const { shares: sharedKeys, zkp: pzkp } = secretSharing.share(
+      master,
+      t,
+      n,
+      { ec: ECCurve },
+    )
+    if (!pzkp) throw new Error('Invalid zk proofs')
     // Round 1
     const hashMsg = await utils.sha256(msg)
-    const { shares, R, r } = ECTSS.shareRandomness(
+    const {
+      shares,
+      R,
+      r,
+      zkp: xzkp,
+    } = ECTSS.shareRandomness(
       t,
       n,
       sharedKeys.map((e) => e.subarray(0, 8)),
@@ -28,9 +39,14 @@ describe('ECTSS', () => {
         ECTSS.sign(hashMsg, R, shares[i].subarray(32), sharedKey.subarray(32)),
       )
     // Validate
+    let ok = sharedSigs
+      .map((sig, i) =>
+        ECTSS.verify(hashMsg, R, sharedKeys[i].subarray(0, 8), sig, pzkp, xzkp),
+      )
+      .reduce((ok, e) => ok && e, true)
+    // Correct sig
     const indice = sharedKeys.slice(0, t).map((e) => e.subarray(0, 8))
     const pi = secretSharing.pi(indice)
-    // Correct sig
     const correctSigs = sharedSigs.map((sharedSig, i) =>
       utils.concatBytes(
         sharedSig.subarray(0, 33),
@@ -39,7 +55,7 @@ describe('ECTSS', () => {
     )
     // Combine sigs
     const [sig] = ECTSS.addSig(correctSigs, r)
-    const ok = await ECTSS.verify(hashMsg, sig, publicKey)
+    ok = ok && verify(sig, hashMsg, publicKey, { strict: false })
     expect(ok).is.true
   })
 
@@ -49,10 +65,21 @@ describe('ECTSS', () => {
     const t = 2
     const n = 3
     // Key generation
-    const { shares: sharedKeys } = secretSharing.share(master, t, n)
+    const { shares: sharedKeys, zkp: pzkp } = secretSharing.share(
+      master,
+      t,
+      n,
+      { ec: ECCurve },
+    )
+    if (!pzkp) throw new Error('Invalid zk proofs')
     // Round 1
     const hashMsg = await utils.sha256(msg)
-    const { shares, R, r } = ECTSS.shareRandomness(
+    const {
+      shares,
+      R,
+      r,
+      zkp: xzkp,
+    } = ECTSS.shareRandomness(
       t,
       n,
       sharedKeys.map((e) => e.subarray(0, 8)),
@@ -64,9 +91,15 @@ describe('ECTSS', () => {
         ECTSS.sign(hashMsg, R, shares[i].subarray(32), sharedKey.subarray(32)),
       )
     // Validate
+    // Validate
+    let ok = sharedSigs
+      .map((sig, i) =>
+        ECTSS.verify(hashMsg, R, sharedKeys[i].subarray(0, 8), sig, pzkp, xzkp),
+      )
+      .reduce((ok, e) => ok && e, true)
+    // Correct sig
     const indice = sharedKeys.slice(0, t).map((e) => e.subarray(0, 8))
     const pi = secretSharing.pi(indice)
-    // Correct sig
     const correctSigs = sharedSigs.map((sharedSig, i) =>
       utils.concatBytes(
         sharedSig.subarray(0, 33),
@@ -75,7 +108,7 @@ describe('ECTSS', () => {
     )
     // Combine sigs
     const [sig] = ECTSS.addSig(correctSigs, r)
-    const ok = await ECTSS.verify(hashMsg, sig, publicKey)
+    ok = ok && verify(sig, hashMsg, publicKey, { strict: false })
     expect(ok).is.true
   })
 })

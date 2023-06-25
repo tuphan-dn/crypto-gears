@@ -1,16 +1,10 @@
-import {
-  CURVE,
-  Point,
-  utils,
-  Signature,
-  verify,
-  getPublicKey,
-} from '@noble/secp256k1'
+import { CURVE, Point, utils, Signature, getPublicKey } from '@noble/secp256k1'
 import { keccak_256 } from '@noble/hashes/sha3'
 import BN from 'bn.js'
 import { SecretSharing } from './sss'
 import { FiniteField } from './ff'
 import { concatBytes } from '@noble/hashes/utils'
+import { equal } from './utils'
 
 /**
  * ECCurve
@@ -109,15 +103,18 @@ export class ECTSS {
    * @returns
    */
   static addSig = (sigs: Uint8Array[], r: Uint8Array): [Uint8Array, number] => {
-    const x = ECTSS.ff.norm(keccak_256(r))
+    const x = this.ff.norm(keccak_256(r))
     const [R] = sigs.map((sig) => sig.subarray(0, 33))
-    const Rx = ECTSS.ff.norm(R.subarray(1))
+    const Rx = this.ff.norm(R.subarray(1))
     const ss = sigs.map((sig) => sig.subarray(33))
     // Compute S
     const S = this.ff.mul(
       this.ff.inv(r),
       this.ff.sub(
-        ss.reduce((sum, s) => this.ff.add(sum, s), this.ff.decode(new BN(0))),
+        ss.reduce(
+          (sum, s) => this.ff.add(sum, s),
+          this.ff.decode(this.ff.ZERO),
+        ),
         x,
       ),
     )
@@ -131,15 +128,15 @@ export class ECTSS {
 
   /**
    * Partially signs the message by each holder
-   * @param msg Message
-   * @param R Randomness
+   * @param h The message hash
+   * @param R Encrypted randomness
    * @param x Shared randomness
    * @param derivedKey Derived key
    * @returns
    */
   static sign = (
     // Public
-    msg: Uint8Array,
+    h: Uint8Array,
     R: Uint8Array,
     // Private
     x: Uint8Array,
@@ -147,23 +144,66 @@ export class ECTSS {
   ) => {
     if (x.length !== this.randomnessLength)
       throw new Error('bad randomness size')
-    if (derivedKey.length !== ECTSS.privateKeyLength)
+    if (derivedKey.length !== this.privateKeyLength)
       throw new Error('bad private key size')
 
-    const Rx = ECTSS.ff.norm(R.subarray(1))
-    return concatBytes(
-      R,
-      this.ff.add(this.ff.add(msg, this.ff.mul(Rx, derivedKey)), x),
-    )
+    const Rx = this.ff.norm(R.subarray(1))
+    // [e] = [x] + h + Rx * [priv]
+    const e = this.ff.add(this.ff.add(h, this.ff.mul(Rx, derivedKey)), x)
+    return concatBytes(R, e)
   }
 
   /**
-   * Verify the message.
-   * It's identical to the secp256k1 verification.
+   * Verify the commitment by zkp
+   * @param msg Message
+   * @param index Signer id
+   * @param pzkp The zk proof of the private key
+   * @param xzkp The zk proof of the randomness
    */
-  static verify = async (
-    msg: Uint8Array,
+  static verify = (
+    // Public
+    h: Uint8Array,
+    R: Uint8Array,
+    index: Uint8Array,
+    // Witness
     sig: Uint8Array,
-    pubkey: Uint8Array,
-  ) => verify(sig, msg, pubkey, { strict: false })
+    pzkp: Uint8Array[],
+    xzkp: Uint8Array[],
+  ) => {
+    if (pzkp.length !== xzkp.length) throw new Error('bad proofs size')
+
+    const x = this.ff.decode(new BN(index, 8, this.ff.en))
+    // sig = R || [e]
+    const rG = sig.subarray(0, this.publicKeyLength)
+    const e = sig.subarray(this.publicKeyLength, this.signatureLength)
+    if (!equal([R, rG])) return false
+    // xG, H, Rx
+    const xG = xzkp.reduce((sum, co, i) => {
+      const t = ECCurve.mulScalar(co, this.ff.pow(x, i))
+      if (!sum) return t
+      return ECCurve.addPoint(sum, t)
+    }, undefined)
+    const H = ECCurve.baseMul(this.ff.norm(h))
+    const Rx = this.ff.norm(R.subarray(1))
+    // [e]G = ([x] + h + Rx * [priv])G = [x]G + hG + Rx * [priv]G
+    // where
+    // [x]G = (xzkp[0] + xzkp[1] * index + xzkp[2] * index^2 + ...)
+    // [priv]G =  Rx * (pzkp[0] + pzkp[1] * index + pzkp[2] * index^2 + ...)
+    const eG = ECCurve.baseMul(e)
+    const _eG = ECCurve.addPoint(
+      xG,
+      ECCurve.addPoint(
+        H,
+        ECCurve.mulScalar(
+          pzkp.reduce((sum, co, i) => {
+            const t = ECCurve.mulScalar(co, this.ff.pow(x, i))
+            if (!sum) return t
+            return ECCurve.addPoint(sum, t)
+          }, undefined),
+          Rx,
+        ),
+      ),
+    )
+    return equal([_eG, eG])
+  }
 }
