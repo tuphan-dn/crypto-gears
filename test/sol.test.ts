@@ -1,4 +1,3 @@
-import BN from 'bn.js'
 import {
   Connection,
   Keypair,

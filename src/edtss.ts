@@ -1,4 +1,4 @@
-import { CURVE, Point, utils, verify } from '@noble/ed25519'
+import { CURVE, Point, utils } from '@noble/ed25519'
 import { sha512 } from '@noble/hashes/sha512'
 import { keccak_256 } from '@noble/hashes/sha3'
 import BN from 'bn.js'
