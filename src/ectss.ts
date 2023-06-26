@@ -22,6 +22,7 @@ export class ECCurve {
   }
 
   static baseMul = (r: Uint8Array): Uint8Array => {
+    if (this.ff.ZERO.eq(this.ff.encode(r))) return Point.ZERO.toRawBytes(true)
     const b = BigInt(new BN(r, 16, this.ff.en).toString())
     return Point.BASE.multiply(b).toRawBytes(true)
   }
@@ -32,12 +33,19 @@ export class ECCurve {
   }
 
   static addPoint = (pointA: Uint8Array, pointB: Uint8Array): Uint8Array => {
+    if (equal([pointA, Point.ZERO.toRawBytes(true)])) return pointB
+    if (equal([pointB, Point.ZERO.toRawBytes(true)])) return pointA
     const a = Point.fromHex(pointA)
     const b = Point.fromHex(pointB)
     return a.add(b).toRawBytes(true)
   }
 
   static mulScalar = (point: Uint8Array, scalar: Uint8Array): Uint8Array => {
+    if (
+      equal([point, Point.ZERO.toRawBytes(true)]) ||
+      this.ff.ZERO.eq(this.ff.encode(scalar))
+    )
+      return Point.ZERO.toRawBytes(true)
     const p = Point.fromHex(point)
     const s = BigInt(new BN(scalar, 16, this.ff.en).toString())
     return p.multiply(s).toRawBytes(true)
