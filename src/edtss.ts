@@ -183,11 +183,11 @@ export class EdTSS {
     const rG = sig.subarray(0, this.publicKeyLength)
     const s = sig.subarray(this.publicKeyLength, this.signatureLength)
     // _rG = rzkp[0] + rzkp[1] * index + rzkp[2] * index^2 + ...
-    const _rG = rzkp.reduce((sum, co, i) => {
-      const t = EdCurve.mulScalar(co, this.ff.pow(x, i))
-      if (!sum) return t
-      return EdCurve.addPoint(sum, t)
-    }, undefined)
+    const _rG = rzkp.reduce(
+      (sum, co, i) =>
+        EdCurve.addPoint(sum, EdCurve.mulScalar(co, this.ff.pow(x, i))),
+      EdCurve.ZERO,
+    )
     if (!equal([_rG, rG])) return false
     // [s]G = ([r] + h * [priv])G = [r]G + h * [priv]G
     // [s]G = [r]G + h * (pzkp[0] + pzkp[1] * index + pzkp[2] * index^2 + ...)
@@ -195,11 +195,11 @@ export class EdTSS {
     const _sG = EdCurve.addPoint(
       rG,
       EdCurve.mulScalar(
-        pzkp.reduce((sum, co, i) => {
-          const t = EdCurve.mulScalar(co, this.ff.pow(x, i))
-          if (!sum) return t
-          return EdCurve.addPoint(sum, t)
-        }, undefined),
+        pzkp.reduce(
+          (sum, co, i) =>
+            EdCurve.addPoint(sum, EdCurve.mulScalar(co, this.ff.pow(x, i))),
+          EdCurve.ZERO,
+        ),
         this.ff.norm(h),
       ),
     )

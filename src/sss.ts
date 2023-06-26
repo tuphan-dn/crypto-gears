@@ -13,6 +13,7 @@ import { FiniteField } from './ff'
 import { calcPolynomial, equal } from './utils'
 import { EdCurve } from './edtss'
 import { ECCurve } from './ectss'
+import BN from 'bn.js'
 
 export type ExtractedShare = {
   index: Uint8Array // 8 bytes
@@ -240,5 +241,25 @@ export class SecretSharing {
     const id = next.subarray(24, 32)
     const a = this.ff.add(prev.subarray(32), next.subarray(32))
     return concatBytes(i, t, n, id, a)
+  }
+
+  static verify = (
+    z: Uint8Array,
+    index: Uint8Array,
+    pzkp: Uint8Array[],
+    rzkp: Uint8Array[],
+    ec: typeof EdCurve | typeof ECCurve,
+  ) => {
+    const zkp: Uint8Array[] = []
+    const n = Math.max(pzkp.length, rzkp.length)
+    for (let i = 0; i < n; i++)
+      zkp.push(ec.addPoint(pzkp[i] || ec.ZERO, rzkp[i] || ec.ZERO))
+    const x = ec.ff.decode(new BN(index, 8, ec.ff.en))
+    const zG = ec.baseMul(z)
+    const _zG = zkp.reduce(
+      (sum, co, i) => ec.addPoint(sum, ec.mulScalar(co, ec.ff.pow(x, i))),
+      ec.ZERO,
+    )
+    return equal([zG, _zG])
   }
 }

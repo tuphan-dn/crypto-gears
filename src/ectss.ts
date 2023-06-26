@@ -187,11 +187,11 @@ export class ECTSS {
     const e = sig.subarray(this.publicKeyLength, this.signatureLength)
     if (!equal([R, rG])) return false
     // xG, H, Rx
-    const xG = xzkp.reduce((sum, co, i) => {
-      const t = ECCurve.mulScalar(co, this.ff.pow(x, i))
-      if (!sum) return t
-      return ECCurve.addPoint(sum, t)
-    }, undefined)
+    const xG = xzkp.reduce(
+      (sum, co, i) =>
+        ECCurve.addPoint(sum, ECCurve.mulScalar(co, this.ff.pow(x, i))),
+      ECCurve.ZERO,
+    )
     const H = ECCurve.baseMul(this.ff.norm(h))
     const Rx = this.ff.norm(R.subarray(1))
     // [e]G = ([x] + h + Rx * [priv])G = [x]G + hG + Rx * [priv]G
@@ -204,11 +204,11 @@ export class ECTSS {
       ECCurve.addPoint(
         H,
         ECCurve.mulScalar(
-          pzkp.reduce((sum, co, i) => {
-            const t = ECCurve.mulScalar(co, this.ff.pow(x, i))
-            if (!sum) return t
-            return ECCurve.addPoint(sum, t)
-          }, undefined),
+          pzkp.reduce(
+            (sum, co, i) =>
+              ECCurve.addPoint(sum, ECCurve.mulScalar(co, this.ff.pow(x, i))),
+            ECCurve.ZERO,
+          ),
           Rx,
         ),
       ),
