@@ -12,6 +12,7 @@ import { equal } from './utils'
  */
 export class EdCurve {
   static ff = FiniteField.fromBigInt(CURVE.n, 'le')
+  static ZERO = Point.ZERO.toRawBytes()
 
   static validate = (point: Uint8Array): boolean => {
     try {

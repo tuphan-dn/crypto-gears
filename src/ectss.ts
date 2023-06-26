@@ -11,6 +11,7 @@ import { equal } from './utils'
  */
 export class ECCurve {
   static ff = FiniteField.fromBigInt(CURVE.n, 'be')
+  static ZERO = Point.ZERO.toRawBytes(true)
 
   static validate = (point: Uint8Array): boolean => {
     try {
