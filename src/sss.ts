@@ -106,7 +106,10 @@ export class SecretSharing {
    * @returns The highest coefficient
    */
   ft1 = (shares: Uint8Array[]): Uint8Array => {
-    const xs = shares.map((share) => share.subarray(0, 8)).map(this.ff.encode)
+    const { indice, t } = this.validateShares(shares)
+    const _t = this.ff.encode(t).toNumber()
+    const xs = indice.map(this.ff.encode).slice(0, _t)
+    const ys = shares.map((share) => share.subarray(32, 64)).slice(0, _t)
     const ls = xs
       .map((x, i) =>
         xs
@@ -117,7 +120,6 @@ export class SecretSharing {
           .redInvm(),
       )
       .map((l) => this.ff.decode(l, 32))
-    const ys = shares.map((share) => share.subarray(32, 64))
     return ys.reduce(
       (sum, y, i) => this.ff.add(this.yl(y, ls[i]), sum),
       this.ff.decode(this.ff.ZERO),

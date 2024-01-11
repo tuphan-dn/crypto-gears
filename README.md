@@ -95,7 +95,7 @@ Plus, to precompute the derived keys of holders, they must know who will take pa
 # How to test?
 
 ```
-yarn test
+pnpm test
 ```
 
 # References
