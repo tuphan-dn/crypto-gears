@@ -15,8 +15,8 @@
   "main": "dist/index.js",
   "repository": "git@github.com:DescartesNetwork/desig.git",
   "author": {
-    "name": "Tu Phan",
-    "email": "tuphan@descartes.network"
+    "name": "Desig Protocol",
+    "email": "hi@desig.io"
   },
   "license": "MIT",
   "publishConfig": {
@@ -24,21 +24,32 @@
     "registry": "https://registry.npmjs.org/"
   },
   "scripts": {
+    "prepare": "husky",
     "build": "pnpm clean && tsc",
-    "deploy": "typedoc --excludePrivate --excludeProtected ./src/index.ts && gh-pages -d docs",
     "test": "pnpm build && mocha --require ts-node/register -t 120000 test/**/*.test.ts",
-    "test:watch": "nodemon --ext ts --watch src --watch test --exec \"pnpm test\"",
-    "clean": "rimraf dist"
+    "test:watch": "nodemon --ext ts --watch src --watch test --exec 'pnpm test'",
+    "ci:docs": "typedoc --includeVersion --excludePrivate --excludeProtected src/index.ts",
+    "ci:release": "semantic-release",
+    "clean": "rimraf dist docs"
+  },
+  "engines": {
+    "node": "18.x"
   },
   "dependencies": {
+    "@noble/curves": "^1.4.0",
     "@noble/ed25519": "^1.7.1",
     "@noble/hashes": "^1.1.5",
     "@noble/secp256k1": "^1.7.0",
     "bn.js": "^5.2.1"
   },
   "devDependencies": {
+    "@commitlint/cli": "^19.2.1",
+    "@commitlint/config-conventional": "^19.1.0",
     "@ethereumjs/common": "^3.0.2",
     "@ethereumjs/tx": "~4.0.2",
+    "@semantic-release/exec": "^6.0.3",
+    "@semantic-release/git": "^10.0.1",
+    "@semantic-release/github": "^10.0.2",
     "@solana/web3.js": "^1.73.0",
     "@types/bn.js": "^5.1.1",
     "@types/chai": "^4.3.3",
@@ -46,17 +57,15 @@
     "@types/node": "^18.7.18",
     "bs58": "^5.0.0",
     "chai": "^4.3.6",
-    "gh-pages": "^4.0.0",
+    "husky": "^9.0.11",
     "mocha": "^10.0.0",
     "nodemon": "^2.0.20",
     "rimraf": "^3.0.2",
+    "semantic-release": "^23.0.6",
     "ts-mocha": "^10.0.0",
     "ts-node": "^10.9.1",
     "typedoc": "^0.23.15",
     "typescript": "^4.8.3",
     "web3": "^1.8.2"
-  },
-  "engines": {
-    "node": ">=16 <=18"
   }
 }
