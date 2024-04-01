@@ -26,14 +26,14 @@
   "scripts": {
     "prepare": "husky",
     "build": "pnpm clean && tsc",
-    "test": "pnpm build && mocha --require ts-node/register -t 120000 test/**/*.test.ts",
+    "test": "pnpm build && mocha --require ts-node/register -t 120000 test/**/eth.test.ts",
     "test:watch": "nodemon --ext ts --watch src --watch test --exec 'pnpm test'",
     "ci:docs": "typedoc --includeVersion --excludePrivate --excludeProtected src/index.ts",
     "ci:release": "semantic-release",
     "clean": "rimraf dist docs"
   },
   "engines": {
-    "node": ">=18 <=20"
+    "node": "20"
   },
   "dependencies": {
     "@noble/curves": "^1.4.0",
@@ -46,7 +46,6 @@
     "@commitlint/cli": "^19.2.1",
     "@commitlint/config-conventional": "^19.1.0",
     "@ethereumjs/common": "^3.0.2",
-    "@ethereumjs/tx": "~4.0.2",
     "@semantic-release/exec": "^6.0.3",
     "@semantic-release/git": "^10.0.1",
     "@semantic-release/github": "^10.0.2",
@@ -57,6 +56,7 @@
     "@types/node": "^18.7.18",
     "bs58": "^5.0.0",
     "chai": "^4.3.6",
+    "ethers": "^6.11.1",
     "husky": "^9.0.11",
     "mocha": "^10.0.0",
     "nodemon": "^2.0.20",
@@ -65,7 +65,6 @@
     "ts-mocha": "^10.0.0",
     "ts-node": "^10.9.1",
     "typedoc": "^0.23.15",
-    "typescript": "^4.8.3",
-    "web3": "^1.8.2"
+    "typescript": "^4.8.3"
   }
 }

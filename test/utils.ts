@@ -1,5 +1,5 @@
 import { Cluster, PublicKey } from '@solana/web3.js'
-import Web3 from 'web3'
+import { isAddress } from 'ethers'
 
 export const msg = Buffer.from('this is a message', 'utf8')
 export const print = (...args: any[]) => {
@@ -30,10 +30,13 @@ export const isEthereumAddress = (
   address: string | undefined,
 ): address is string => {
   if (!address) return false
-  return Web3.utils.isAddress(address)
+  return isAddress(address)
 }
 
-export const etherscan = (addrOrTx: string, net: string = 'goerli'): string => {
+export const etherscan = (
+  addrOrTx: string,
+  net: string = 'sepolia',
+): string => {
   const subnet = net === 'mainnet' ? '' : `${net}.`
   const pathname = isEthereumAddress(addrOrTx) ? 'address' : 'tx'
   return `https://${subnet}etherscan.io/${pathname}/${addrOrTx}`
