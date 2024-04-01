@@ -13,7 +13,7 @@
     "elgamal"
   ],
   "main": "dist/index.js",
-  "repository": "git@github.com:DescartesNetwork/desig.git",
+  "repository": "git@github.com:Desig-Labs/desig-core.git",
   "author": {
     "name": "Desig Protocol",
     "email": "hi@desig.io"
