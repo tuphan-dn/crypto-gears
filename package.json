@@ -33,7 +33,7 @@
     "clean": "rimraf dist docs"
   },
   "engines": {
-    "node": "18.x"
+    "node": ">=18 <=20"
   },
   "dependencies": {
     "@noble/curves": "^1.4.0",
