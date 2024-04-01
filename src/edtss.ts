@@ -1,17 +1,18 @@
-import { CURVE, Point, utils } from '@noble/ed25519'
+import { Point } from '@noble/ed25519'
+import { ed25519 } from '@noble/curves/ed25519'
 import { sha512 } from '@noble/hashes/sha512'
 import { keccak_256 } from '@noble/hashes/sha3'
 import BN from 'bn.js'
 import { SecretSharing } from './sss'
 import { FiniteField } from './ff'
-import { concatBytes } from '@noble/hashes/utils'
+import { concatBytes, randomBytes } from '@noble/hashes/utils'
 import { equal } from './utils'
 
 /**
  * EdCurve
  */
 export class EdCurve {
-  static ff = FiniteField.fromBigInt(CURVE.n, 'le')
+  static ff = FiniteField.fromBigInt(ed25519.CURVE.n, 'le')
   static ZERO = Point.ZERO.toRawBytes()
 
   static validate = (point: Uint8Array): boolean => {
@@ -35,8 +36,8 @@ export class EdCurve {
   }
 
   static addPoint = (pointA: Uint8Array, pointB: Uint8Array) => {
-    if (equal([pointA, Point.ZERO.toRawBytes()])) return pointB
-    if (equal([pointB, Point.ZERO.toRawBytes()])) return pointA
+    if (Point.fromHex(pointA).equals(Point.ZERO)) return pointB
+    if (Point.fromHex(pointB).equals(Point.ZERO)) return pointA
     const a = Point.fromHex(pointA)
     const b = Point.fromHex(pointB)
     return a.add(b).toRawBytes()
@@ -44,7 +45,7 @@ export class EdCurve {
 
   static mulScalar = (point: Uint8Array, scalar: Uint8Array) => {
     if (
-      equal([point, Point.ZERO.toRawBytes()]) ||
+      Point.fromHex(point).equals(Point.ZERO) ||
       this.ff.ZERO.eq(this.ff.encode(scalar))
     )
       return Point.ZERO.toRawBytes()
@@ -72,7 +73,7 @@ export class EdCurve {
  * EdTSS
  */
 export class EdTSS {
-  static ff = FiniteField.fromBigInt(CURVE.n, 'le')
+  static ff = FiniteField.fromBigInt(ed25519.CURVE.n, 'le')
   static signatureLength = 64
   static privateKeyLength = 32
   static publicKeyLength = 32
@@ -85,7 +86,7 @@ export class EdTSS {
     seed?: Uint8Array,
   ) => {
     const r = this.ff.norm(
-      !seed ? utils.randomBytes(EdTSS.randomnessLength) : keccak_256(seed),
+      !seed ? randomBytes(EdTSS.randomnessLength) : keccak_256(seed),
     )
     const secretSharing = new SecretSharing(this.ff)
     const { shares, zkp } = secretSharing.share(r, t, n, {
@@ -115,7 +116,7 @@ export class EdTSS {
       this.ff.decode(new BN(0)),
     )
     // Concat
-    return utils.concatBytes(R, S)
+    return concatBytes(R, S)
   }
 
   /**

@@ -1,6 +1,6 @@
 {
   "name": "@desig/core",
-  "version": "1.0.0-next.2",
+  "version": "2.0.0-next.2",
   "description": "Desig: The Omnichain Multisig Wallet.",
   "homepage": "https://core.desig.io/",
   "keywords": [
@@ -27,7 +27,7 @@
   "scripts": {
     "prepare": "husky",
     "build": "pnpm clean && tsc",
-    "test": "pnpm build && mocha --require ts-node/register -t 120000 test/**/eth.test.ts",
+    "test": "pnpm build && mocha --require ts-node/register -t 120000 test/**/*.test.ts",
     "test:watch": "nodemon --ext ts --watch src --watch test --exec 'pnpm test'",
     "ci:docs": "typedoc --includeVersion --excludePrivate --excludeProtected src/index.ts",
     "ci:release": "semantic-release",

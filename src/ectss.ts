@@ -1,16 +1,17 @@
-import { CURVE, Point, utils, Signature, getPublicKey } from '@noble/secp256k1'
+import { Point, Signature } from '@noble/secp256k1'
+import { secp256k1 } from '@noble/curves/secp256k1'
 import { keccak_256 } from '@noble/hashes/sha3'
 import BN from 'bn.js'
 import { SecretSharing } from './sss'
 import { FiniteField } from './ff'
-import { concatBytes } from '@noble/hashes/utils'
+import { concatBytes, randomBytes } from '@noble/hashes/utils'
 import { equal } from './utils'
 
 /**
  * ECCurve
  */
 export class ECCurve {
-  static ff = FiniteField.fromBigInt(CURVE.n, 'be')
+  static ff = FiniteField.fromBigInt(secp256k1.CURVE.n, 'be')
   static ZERO = Point.ZERO.toRawBytes(true)
 
   static validate = (point: Uint8Array): boolean => {
@@ -34,8 +35,8 @@ export class ECCurve {
   }
 
   static addPoint = (pointA: Uint8Array, pointB: Uint8Array): Uint8Array => {
-    if (equal([pointA, Point.ZERO.toRawBytes(true)])) return pointB
-    if (equal([pointB, Point.ZERO.toRawBytes(true)])) return pointA
+    if (Point.fromHex(pointA).equals(Point.ZERO)) return pointB
+    if (Point.fromHex(pointB).equals(Point.ZERO)) return pointA
     const a = Point.fromHex(pointA)
     const b = Point.fromHex(pointB)
     return a.add(b).toRawBytes(true)
@@ -43,7 +44,7 @@ export class ECCurve {
 
   static mulScalar = (point: Uint8Array, scalar: Uint8Array): Uint8Array => {
     if (
-      equal([point, Point.ZERO.toRawBytes(true)]) ||
+      Point.fromHex(point).equals(Point.ZERO) ||
       this.ff.ZERO.eq(this.ff.encode(scalar))
     )
       return Point.ZERO.toRawBytes(true)
@@ -58,7 +59,7 @@ export class ECCurve {
 
   static getPublicKey = (privateKey: Uint8Array, derived = false) => {
     if (!derived) privateKey = this.getDerivedKey(privateKey)
-    return getPublicKey(privateKey, true)
+    return secp256k1.getPublicKey(privateKey, true)
   }
 }
 
@@ -66,7 +67,7 @@ export class ECCurve {
  * ECTSS
  */
 export class ECTSS {
-  static ff = FiniteField.fromBigInt(CURVE.n, 'be')
+  static ff = FiniteField.fromBigInt(secp256k1.CURVE.n, 'be')
   static signatureLength = 65
   static randomnessLength = 32
   static privateKeyLength = 32
@@ -94,7 +95,7 @@ export class ECTSS {
     seed?: Uint8Array,
   ) => {
     const r = this.ff.norm(
-      !seed ? utils.randomBytes(this.randomnessLength) : keccak_256(seed),
+      !seed ? randomBytes(this.randomnessLength) : keccak_256(seed),
     )
     const x = this.ff.norm(keccak_256(r))
     const secretSharing = new SecretSharing(this.ff)

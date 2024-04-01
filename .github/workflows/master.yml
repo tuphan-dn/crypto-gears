@@ -22,8 +22,10 @@ jobs:
           version: 8
       - name: Install dependencies
         run: pnpm install
-      - name: Build the library
-        run: pnpm build
+      - name: Build & Test the library
+        run: |
+          pnpm build
+          pnpm test
       - name: Release new sematic version
         run: pnpm ci:release
         env:
