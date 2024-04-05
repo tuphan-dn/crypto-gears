@@ -31,7 +31,7 @@ export class ElGamal {
   encrypt = (msg: Uint8Array, pubkey: Uint8Array): Uint8Array => {
     if (msg.length != ElGamal.plainTextLength)
       throw new Error(
-        `Invalid block length. It must be 30 bytes instead of ${msg.length} bytes.`,
+        `Invalid block length. It must be 32 bytes instead of ${msg.length} bytes.`,
       )
     const r = EdCurve.ff.rand()
     const R = EdCurve.baseMul(r)
