@@ -56,6 +56,7 @@ export class EdCurve {
 
   static getDerivedKey = (privateKey: Uint8Array) => {
     const derivedKey = sha512(privateKey.subarray(0, 32)).subarray(0, 32)
+    // Bit clamping
     derivedKey[0] &= 248
     derivedKey[31] &= 127
     derivedKey[31] |= 64
