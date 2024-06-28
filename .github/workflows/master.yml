@@ -32,6 +32,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
   docs:
+    needs: build
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -41,6 +42,8 @@ jobs:
       - uses: pnpm/action-setup@v3
         with:
           version: 8
+      - name: Install dependencies
+        run: pnpm install
       - name: Build docs
         run: pnpm ci:docs
       - name: Publish docs
