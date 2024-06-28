@@ -7,7 +7,7 @@
  */
 
 import { concatBytes, randomBytes } from '@noble/hashes/utils'
-import FBN, { FiniteField } from './fbn'
+import { FBN, FiniteField } from './fbn'
 import { equal } from './utils'
 import BN from 'bn.js'
 import { Poly } from './poly'

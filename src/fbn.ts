@@ -47,7 +47,7 @@ export class FiniteField {
   rand = (len = SUPPORTED_GROUP_LEN) => this.norm(randomBytes(len))
 }
 
-export default class FBN {
+export class FBN {
   public readonly value: RedBN
 
   constructor(value: Uint8Array, public readonly ff: FiniteField) {

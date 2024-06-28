@@ -1,4 +1,4 @@
-import FBN, { FiniteField } from './fbn'
+import { FBN, FiniteField } from './fbn'
 
 export class Poly {
   constructor(public readonly coefficients: FBN[]) {}
