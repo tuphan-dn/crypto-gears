@@ -53,3 +53,4 @@ jobs:
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           projectName: crypto-gears
           directory: docs
+          branch: main
