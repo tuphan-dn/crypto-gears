@@ -1,66 +1,65 @@
-import { CURVE } from '@noble/ed25519'
-import { BN } from 'bn.js'
+import { ed25519 } from '@noble/curves/ed25519'
 import { expect } from 'chai'
 import { FiniteField } from '../dist'
 
 describe('Finite Field in LE', () => {
-  const ff = FiniteField.fromBigInt(CURVE.l, 'le')
+  const ff = new FiniteField(ed25519.CURVE.n, 'le')
   const a = ff.rand()
   const b = ff.rand()
-  const two = ff.decode(new BN(2))
+  const two = ff.norm(2)
 
   it('add/neg', async () => {
-    const x = ff.add(a, b)
-    const y = ff.add(x, ff.neg(b))
-    expect(ff.equal(a, y)).to.true
+    const x = a.add(b)
+    const y = b.neg().add(x)
+    expect(a.eq(y)).to.true
   })
 
   it('mul/inv', async () => {
-    const x = ff.mul(a, b)
-    const y = ff.mul(x, ff.inv(b))
-    expect(ff.equal(a, y)).to.true
+    const x = a.mul(b)
+    const y = b.inv().mul(x)
+    expect(a.eq(y)).to.true
   })
 
   it('add/mul', async () => {
-    const x = ff.add(a, a)
-    const y = ff.mul(a, two)
-    expect(ff.equal(x, y)).to.true
+    const x = a.add(a)
+    const y = a.mul(two)
+    expect(x.eq(y)).to.true
   })
 
   it('mul/pow', async () => {
-    const x = ff.mul(a, a)
-    const y = ff.pow(a, 2)
-    expect(ff.equal(x, y)).to.true
+    const x = a.mul(a)
+    const y = a.pow(2)
+    expect(x.eq(y)).to.true
   })
 })
 
 describe('Finite Field in BE', () => {
-  const ff = FiniteField.fromBigInt(CURVE.l, 'be')
+  const ff = new FiniteField(ed25519.CURVE.n, 'be')
   const a = ff.rand()
   const b = ff.rand()
-  const two = ff.decode(new BN(2))
+  const two = ff.norm(2)
 
   it('add/neg', async () => {
-    const x = ff.add(a, b)
-    const y = ff.add(x, ff.neg(b))
-    expect(ff.equal(a, y)).to.true
+    const x = a.add(b)
+    const y = b.neg().add(x)
+    expect(a.eq(y)).to.true
   })
 
   it('mul/inv', async () => {
-    const x = ff.mul(a, b)
-    const y = ff.mul(x, ff.inv(b))
-    expect(ff.equal(a, y)).to.true
+    const x = a.mul(b)
+    const y = b.inv().mul(x)
+    expect(a.eq(y)).to.true
   })
 
   it('add/mul', async () => {
-    const x = ff.add(a, a)
-    const y = ff.mul(a, two)
-    expect(ff.equal(x, y)).to.true
+    const x = a.add(a)
+    const y = a.mul(two)
+    expect(x.eq(y)).to.true
   })
 
   it('mul/pow', async () => {
-    const x = ff.mul(a, a)
-    const y = ff.pow(a, 2)
-    expect(ff.equal(x, y)).to.true
+    const x = a.mul(a)
+    const y = a.pow(2)
+    expect(x.eq(y)).to.true
   })
 })
