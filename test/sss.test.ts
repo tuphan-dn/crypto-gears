@@ -99,10 +99,7 @@ describe('Threshold Signature Scheme in LE', function () {
     shares.push(
       concatBytes(
         rk.subarray(0, 32),
-        ss.ff
-          .norm(zk)
-          .sub(ss.ff.norm(rk.subarray(32)))
-          .serialize(),
+        zk.sub(ss.ff.norm(rk.subarray(32))).serialize(),
       ),
     )
     const updates = ss.proactivate(
@@ -286,10 +283,7 @@ describe('Threshold Signature Scheme in BE', function () {
     shares.push(
       concatBytes(
         rk.subarray(0, 32),
-        ss.ff
-          .norm(zk)
-          .sub(ss.ff.norm(rk.subarray(32)))
-          .serialize(),
+        zk.sub(ss.ff.norm(rk.subarray(32))).serialize(),
       ),
     )
     const updates = ss.proactivate(

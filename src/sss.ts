@@ -7,7 +7,7 @@
  */
 
 import { concatBytes, randomBytes } from '@noble/hashes/utils'
-import { FiniteField } from './fbn'
+import FBN, { FiniteField } from './fbn'
 import { equal } from './utils'
 import BN from 'bn.js'
 import { Poly } from './poly'
@@ -71,33 +71,23 @@ export class SecretSharing {
    * @param index The point to interpolate
    * @returns
    */
-  basis = (
-    indice: Uint8Array[],
-    index: Uint8Array = this.ff.ZERO.serialize(8),
-  ): Uint8Array[] => {
-    const _indice = indice.map((i) => this.ff.norm(i))
-    const _index = this.ff.norm(index)
-
-    const involved = _indice.findIndex((i) => i.eq(_index))
+  basis = (indice: FBN[], index: FBN = this.ff.ZERO): FBN[] => {
+    const involved = indice.findIndex((i) => i.eq(index))
     // Edge cases
     if (involved >= 0)
-      return _indice
-        .map((_, i) => (i === involved ? this.ff.ONE : this.ff.ZERO))
-        .map((prod) => prod.serialize())
+      return indice.map((_, i) => (i === involved ? this.ff.ONE : this.ff.ZERO))
     // Common cases
-    const _shared = _indice.reduce(
-      (prod, e) => _index.sub(e).mul(prod),
+    const shared = indice.reduce(
+      (prod, e) => index.sub(e).mul(prod),
       this.ff.ONE,
     )
-    return _indice
-      .map((a, i) =>
-        _indice
-          .reduce((p, b, j) => (i !== j ? a.sub(b).mul(p) : p), this.ff.ONE)
-          .mul(_index.sub(a))
-          .inv()
-          .mul(_shared),
-      )
-      .map((prod) => prod.serialize())
+    return indice.map((a, i) =>
+      indice
+        .reduce((p, b, j) => (i !== j ? a.sub(b).mul(p) : p), this.ff.ONE)
+        .mul(index.sub(a))
+        .inv()
+        .mul(shared),
+    )
   }
 
   /**
@@ -128,13 +118,11 @@ export class SecretSharing {
    * @param shares The sufficient number of shares
    * @returns The y coordinate
    */
-  interpolate = (index: Uint8Array, shares: Uint8Array[]): Uint8Array => {
+  interpolate = (index: Uint8Array, shares: Uint8Array[]): FBN => {
     const { indice } = this._check(shares)
-    const basis = this.basis(indice, index).map(this.ff.norm)
+    const basis = this.basis(indice.map(this.ff.norm), this.ff.norm(index))
     const ys = shares.map((share) => this.ff.norm(share.subarray(32, 64)))
-    return ys
-      .reduce((sum, y, i) => sum.add(y.mul(basis[i])), this.ff.ZERO)
-      .serialize()
+    return ys.reduce((sum, y, i) => sum.add(y.mul(basis[i])), this.ff.ZERO)
   }
 
   /**
@@ -143,7 +131,7 @@ export class SecretSharing {
    * @returns The original secret
    */
   construct = (shares: Uint8Array[]): Uint8Array => {
-    return this.interpolate(this.ff.ZERO.serialize(8), shares)
+    return this.interpolate(this.ff.ZERO.serialize(), shares).serialize()
   }
 
   /**
