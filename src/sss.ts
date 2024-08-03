@@ -131,7 +131,7 @@ export class SecretSharing {
    * @returns The original secret
    */
   construct = (shares: Uint8Array[]): Uint8Array => {
-    return this.interpolate(this.ff.ZERO.serialize(), shares).serialize()
+    return this.interpolate(this.ff.ZERO.serialize(8), shares).serialize()
   }
 
   /**

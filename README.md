@@ -1,6 +1,6 @@
-# @gears-bot/crypto
+# Crypto Gears
 
-A set of custom crypto protocols
+A set of custom crypto protocols.
 
 ## Get Started
 
